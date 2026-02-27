@@ -17,11 +17,12 @@ export const metadata: Metadata = {
   generator: 'v0.app',
   icons: {
     icon: [
-      { url: '/icon-dark-32x32.png', type: 'image/png', sizes: '32x32' },
-      { url: '/icon.svg', type: 'image/svg+xml' },
+      {
+        url: '/stb.webp',
+        type: 'image/webp',
+      },
     ],
-    shortcut: '/icon-dark-32x32.png',
-    apple: '/icon-dark-32x32.png',
+    apple: '/stb.webp',
   },
 }
 

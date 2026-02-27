@@ -5,6 +5,26 @@ import { authCookieName, verifyAuthToken } from '@/lib/auth'
 
 export const runtime = 'nodejs'
 
+async function queryWithRetry<T>(fn: () => Promise<T>, retries = 2): Promise<T> {
+  let attempt = 0
+  // Exponential backoff 100ms, 250ms
+  const waits = [100, 250]
+  while (true) {
+    try {
+      return await fn()
+    } catch (err: any) {
+      if (attempt >= retries) throw err
+      // only retry for transient connection errors
+      const code = err?.code || err?.errno
+      if (!['ECONNRESET', 'PROTOCOL_CONNECTION_LOST', 'ER_CON_COUNT_ERROR'].includes(code)) {
+        throw err
+      }
+      await new Promise(res => setTimeout(res, waits[attempt] ?? 250))
+      attempt++
+    }
+  }
+}
+
 // GET notifications for current user
 export async function GET() {
   const cookieStore = await cookies()
@@ -14,13 +34,15 @@ export async function GET() {
   const payload = await verifyAuthToken(token)
 
   try {
-    const [rows] = await getDb().execute(
-      `SELECT id, user_id, title, message, type, is_read, created_at
-       FROM notifications
-       WHERE user_id = ?
-       ORDER BY created_at DESC
-       LIMIT 50`,
-      [payload.sub]
+    const [rows] = await queryWithRetry(() =>
+      getDb().execute(
+        `SELECT id, user_id, title, message, type, is_read, created_at
+         FROM notifications
+         WHERE user_id = ?
+         ORDER BY created_at DESC
+         LIMIT 50`,
+        [payload.sub]
+      )
     )
 
     return NextResponse.json({ notifications: rows })
@@ -42,14 +64,18 @@ export async function POST(req: Request) {
 
   try {
     if (markAllRead) {
-      await getDb().execute(
-        'UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0',
-        [payload.sub]
+      await queryWithRetry(() =>
+        getDb().execute(
+          'UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0',
+          [payload.sub]
+        )
       )
     } else if (notificationId) {
-      await getDb().execute(
-        'UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?',
-        [notificationId, payload.sub]
+      await queryWithRetry(() =>
+        getDb().execute(
+          'UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?',
+          [notificationId, payload.sub]
+        )
       )
     }
 

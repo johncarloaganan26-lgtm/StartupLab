@@ -61,6 +61,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     return () => document.removeEventListener('keydown', down);
   }, []);
 
+  // Auto-collapse on small screens
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setIsCollapsed(true);
+    }
+  }, []);
+
   const filteredEvents = searchQuery
     ? events.filter(e => e.title.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 5)
     : [];

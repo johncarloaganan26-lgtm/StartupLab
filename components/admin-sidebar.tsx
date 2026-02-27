@@ -135,7 +135,7 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
           )}
           {isCollapsed && (
             <img 
-              src={logoSrc} 
+              src="/stb.webp" 
               alt="StartupLab" 
               className="h-10 w-10 object-contain rounded-lg"
             />

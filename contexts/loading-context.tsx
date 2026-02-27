@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
 interface LoadingState {
   isLoading: boolean;
@@ -18,8 +18,17 @@ interface LoadingContextType {
 const LoadingContext = createContext<LoadingContextType | undefined>(undefined);
 
 export const LoadingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadingMessage, setLoadingMessage] = useState('Loading...');
+
+  // Always show a brief loading overlay on hard refresh; clear after mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      setLoadingMessage('');
+    }, 600);
+    return () => clearTimeout(timer);
+  }, []);
 
   const startLoading = useCallback((message: string = 'Loading...') => {
     setIsLoading(true);
