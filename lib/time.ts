@@ -1,3 +1,9 @@
+function coerceIsoToUtc(value: string) {
+  const looksIsoNoZone = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value) && !/([zZ]|[+-]\d{2}:?\d{2})$/.test(value);
+  if (looksIsoNoZone) return `${value}Z`;
+  return value;
+}
+
 export function formatTime12h(time24: string) {
   // Accepts "HH:mm" or "HH:mm:ss" and returns "h:mm AM/PM".
   const match = /^(\d{1,2}):(\d{2})(?::\d{2})?$/.exec(String(time24).trim())
@@ -14,7 +20,7 @@ export function formatTime12h(time24: string) {
 }
 
 export function formatPHDate(value: string | Date) {
-  const date = value instanceof Date ? value : new Date(value)
+  const date = value instanceof Date ? value : new Date(coerceIsoToUtc(String(value)))
   if (Number.isNaN(date.getTime())) return String(value)
 
   const parts = new Intl.DateTimeFormat('en-PH', {
@@ -35,7 +41,7 @@ export function formatPHDate(value: string | Date) {
 }
 
 export function formatPHDateTime(value: string | Date) {
-  const date = value instanceof Date ? value : new Date(value)
+  const date = value instanceof Date ? value : new Date(coerceIsoToUtc(String(value)))
   if (Number.isNaN(date.getTime())) return String(value)
 
   const datePart = formatPHDate(date)

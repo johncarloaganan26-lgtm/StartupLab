@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AdminLayout } from '@/components/admin-layout';
 import { AuthGuard } from '@/components/auth-guard';
 import { useApp } from '@/contexts/app-context';
+import { formatPHDateTime } from '@/lib/time';
 import {
   LineChart,
   Line,
@@ -31,6 +32,14 @@ type DashboardStats = {
     userName: string;
     userEmail: string;
     eventTitle: string;
+  }[];
+  recentAuditLogs?: {
+    id: string;
+    action: string;
+    entityType: string;
+    entityId: string;
+    details: any;
+    createdAt: string;
   }[];
 };
 
@@ -91,6 +100,7 @@ export default function AdminDashboardPage() {
   }, [stats]);
 
   const recentRows = (stats?.recentRegistrations ?? []).slice(0, 8);
+  const recentActivity = (stats?.recentAuditLogs ?? []).slice(0, 6);
 
   const quickActions = useMemo(
     () => [
@@ -140,33 +150,11 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <MetricCard
-              title="Total Attendees"
-              value={totalAttendees}
-              subtitle="Last 12 months"
-              icon={<Users className="w-5 h-5 text-primary" />}
-            />
-            <MetricCard
-              title="Yearly Events"
-              value={totalEvents}
-              subtitle="Last 12 months"
-              icon={<Calendar className="w-5 h-5 text-primary" />}
-            />
-            <MetricCard
-              title="Monthly Attendees"
-              value={monthlyAttendees}
-              subtitle="vs last month"
-              trend={regGrowth}
-              icon={<Activity className="w-5 h-5 text-primary" />}
-            />
-            <MetricCard
-              title="Monthly Events"
-              value={monthlyEvents}
-              subtitle="vs last month"
-              trend={eventGrowth}
-              icon={<TrendingUp className="w-5 h-5 text-primary" />}
-            />
+          <div className="flex flex-wrap gap-2">
+            <StatPill label="Total Attendees" value={totalAttendees} icon={<Users className="w-4 h-4" />} />
+            <StatPill label="Yearly Events" value={totalEvents} icon={<Calendar className="w-4 h-4" />} />
+            <StatPill label="Monthly Attendees" value={monthlyAttendees} delta={regGrowth} icon={<Activity className="w-4 h-4" />} />
+            <StatPill label="Monthly Events" value={monthlyEvents} delta={eventGrowth} icon={<TrendingUp className="w-4 h-4" />} />
           </div>
 
           <div className="grid lg:grid-cols-3 gap-4">
@@ -206,22 +194,79 @@ export default function AdminDashboardPage() {
             </Card>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {quickActions.map((action) => (
-              <Link
-                key={action.href}
-                href={action.href}
-                className="group border border-border rounded-md p-4 bg-card shadow-sm hover:border-primary/60 transition-colors flex items-center gap-3"
-              >
-                <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                  {action.icon}
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">{action.title}</p>
-                  <p className="text-xs text-muted-foreground truncate">{action.description}</p>
-                </div>
-              </Link>
-            ))}
+          <div className="grid lg:grid-cols-2 gap-4">
+            <Card className="border-border">
+              <CardHeader className="flex items-center justify-between">
+                <CardTitle>Recent Activity</CardTitle>
+                <Link href="/admin/audit-logs" className="text-xs font-semibold text-primary hover:underline">
+                  View all
+                </Link>
+              </CardHeader>
+              <CardContent className="space-y-3 max-h-[360px] overflow-auto">
+                {recentActivity.length > 0 ? (
+                  recentActivity.map((log) => {
+                    const actionText = log.action?.replace(/_/g, ' ') ?? 'activity';
+                    const toneClass = /delete|remove|revoke|fail/i.test(actionText)
+                      ? 'text-red-600'
+                      : /create|add|approve|confirm/i.test(actionText)
+                        ? 'text-green-600'
+                        : /update|edit|change/i.test(actionText)
+                          ? 'text-blue-600'
+                          : 'text-muted-foreground';
+
+                    return (
+                      <div key={log.id} className="border border-border rounded-md p-3 space-y-1 flex gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                          <Activity className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-sm font-semibold text-foreground leading-tight capitalize truncate">
+                              {actionText}
+                            </p>
+                            <span className="text-[10px] uppercase px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border shrink-0">
+                              {log.entityType}
+                            </span>
+                          </div>
+                          <p className={`text-xs flex items-center gap-2 ${toneClass}`}>
+                            <Activity className="w-3.5 h-3.5" />
+                            {log.entityId || 'N/A'}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground">
+                            {log.createdAt ? formatPHDateTime(log.createdAt) : ''}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-sm text-muted-foreground text-center py-4">No recent activity.</div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="border-border">
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {quickActions.map((action) => (
+                  <Link
+                    key={action.href}
+                    href={action.href}
+                    className="group border border-border rounded-md p-3 bg-card hover:border-primary/60 transition-colors flex items-center gap-3"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                      {action.icon}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">{action.title}</p>
+                      <p className="text-xs text-muted-foreground truncate">{action.description}</p>
+                    </div>
+                  </Link>
+                ))}
+              </CardContent>
+            </Card>
           </div>
 
           <Card className="border-border">
@@ -251,7 +296,7 @@ export default function AdminDashboardPage() {
                         <td className="py-2 pr-4">{row.eventTitle || '-'}</td>
                         <td className="py-2 pr-4 capitalize text-primary">{row.status || '-'}</td>
                         <td className="py-2 pr-4 text-xs text-muted-foreground">
-                          {row.registeredAt ? new Date(row.registeredAt).toLocaleString() : '-'}
+                          {row.registeredAt ? formatPHDateTime(row.registeredAt) : '-'}
                         </td>
                       </tr>
                     ))
@@ -272,35 +317,36 @@ export default function AdminDashboardPage() {
   );
 }
 
-type MetricCardProps = {
-  title: string;
+function StatPill({
+  label,
+  value,
+  icon,
+  delta,
+}: {
+  label: string;
   value: number | string;
-  subtitle: string;
   icon: React.ReactNode;
-  trend?: number | null;
-};
-
-function MetricCard({ title, value, subtitle, icon, trend }: MetricCardProps) {
-  const trendLabel =
-    typeof trend === 'number'
-      ? `${trend >= 0 ? '+' : ''}${trend}% vs last month`
-      : subtitle;
-  const trendClass = trend !== null && trend !== undefined
-    ? trend >= 0
-      ? 'text-green-600'
-      : 'text-amber-600'
-    : 'text-muted-foreground';
+  delta?: number | null;
+}) {
+  const showDelta = typeof delta === 'number';
+  const deltaClass =
+    showDelta && delta !== null
+      ? delta >= 0
+        ? 'text-green-600'
+        : 'text-amber-600'
+      : 'text-muted-foreground';
 
   return (
-    <Card className="border-border shadow-sm">
-      <CardContent className="p-4 flex items-center justify-between">
-        <div>
-          <p className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide">{title}</p>
-          <p className="text-3xl font-bold mt-1">{value}</p>
-          <p className={`text-xs mt-1 ${trendClass}`}>{trendLabel}</p>
-        </div>
-        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">{icon}</div>
-      </CardContent>
-    </Card>
+    <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm shadow-sm">
+      <span className="text-primary">{icon}</span>
+      <span className="font-semibold text-foreground">{value}</span>
+      <span className="text-xs text-muted-foreground">{label}</span>
+      {showDelta && (
+        <span className={`text-xs font-semibold ${deltaClass}`}>
+          {delta! >= 0 ? '+' : ''}
+          {delta}%
+        </span>
+      )}
+    </div>
   );
 }

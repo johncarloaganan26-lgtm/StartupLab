@@ -2,53 +2,113 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  LayoutDashboard,
-  Calendar,
-  Users,
-  BarChart3,
-  Archive,
-  ScrollText,
-  Ticket,
-  SlidersHorizontal,
-  Home,
-  Database,
-  Settings,
-} from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 
 const navigation = [
   {
     group: 'DASHBOARD',
-    groupIcon: Home,
+    groupIconName: 'home',
     items: [
-      { href: '/admin', label: 'Overview', icon: LayoutDashboard },
+      { href: '/admin', label: 'Overview', iconName: 'dashboard' },
     ]
   },
   {
     group: 'RECORDS',
-    groupIcon: Database,
+    groupIconName: 'database',
     items: [
-      { href: '/admin/users', label: 'Users', icon: Users },
-      { href: '/admin/events', label: 'Events', icon: Calendar },
-      { href: '/admin/registrations', label: 'Registrations', icon: Ticket },
+      { href: '/admin/users', label: 'Users', iconName: 'user' },
+      { href: '/admin/events', label: 'Events', iconName: 'calendar' },
+      { href: '/admin/registrations', label: 'Registrations', iconName: 'ticket' },
     ]
   },
   {
     group: 'MAINTENANCE',
-    groupIcon: Settings,
+    groupIconName: 'settings',
     items: [
-      { href: '/admin/reports', label: 'Analytics', icon: BarChart3 },
-      { href: '/admin/archive', label: 'Archive', icon: Archive },
-      { href: '/admin/audit-logs', label: 'Audit Trail', icon: ScrollText },
-      { href: '/admin/settings', label: 'Settings', icon: SlidersHorizontal },
+      { href: '/admin/reports', label: 'Analytics', iconName: 'analytics' },
+      { href: '/admin/archive', label: 'Archive', iconName: 'archive' },
+      { href: '/admin/audit-logs', label: 'Audit Trail', iconName: 'clipboard' },
+      { href: '/admin/settings', label: 'Settings', iconName: 'sliders' },
     ]
   }
 ];
 
 interface SidebarProps {
   isCollapsed?: boolean;
+}
+
+function FlatIcon({ name, className }: { name: string; className?: string }) {
+  switch (name) {
+    case 'dashboard':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+          <path d="M3 4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4Zm10 0a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V4ZM3 14a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4Zm10 0a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4Z" />
+        </svg>
+      );
+    case 'user':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+          <path d="M12 2a5 5 0 0 1 5 5c0 2.8-2.24 5-5 5s-5-2.2-5-5a5 5 0 0 1 5-5Zm0 12c4.418 0 8 2.239 8 5v3H4v-3c0-2.761 3.582-5 8-5Z" />
+        </svg>
+      );
+    case 'calendar':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+          <path d="M7 2h2v2h6V2h2v2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2V2Zm13 6H4v12h16V8Z" />
+        </svg>
+      );
+    case 'ticket':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+          <path d="M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4V6Zm4 1h2v10H7V7Zm4 0h2v10h-2V7Z" />
+        </svg>
+      );
+    case 'analytics':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+          <path d="M4 20v-8h3v8H4Zm6 0V4h3v16h-3Zm6 0v-5h3v5h-3Z" />
+        </svg>
+      );
+    case 'archive':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+          <path d="M3 4h18v4H3V4Zm2 6h14v8a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-8Zm4 2v2h6v-2H9Z" />
+        </svg>
+      );
+    case 'home':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+          <path d="m12 3 9 8v10h-6v-6H9v6H3V11l9-8Z" />
+        </svg>
+      );
+    case 'database':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+          <path d="M4 5c0-1.657 3.582-3 8-3s8 1.343 8 3v14c0 1.657-3.582 3-8 3s-8-1.343-8-3V5Zm2 4.126V15c0 .54 2.385 1.7 6 1.7s6-1.16 6-1.7V9.126C15.91 9.7 13.834 10 12 10s-3.91-.3-6-.874ZM18 5c0-.54-2.385-1.7-6-1.7S6 4.46 6 5c0 .54 2.385 1.7 6 1.7S18 5.54 18 5Z" />
+        </svg>
+      );
+    case 'settings':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+          <path d="M10.325 4.317a1.5 1.5 0 0 1 3.35 0l.187.93a1.5 1.5 0 0 0 1.095 1.146l.93.248a1.5 1.5 0 0 1 .987 1.898l-.31.92a1.5 1.5 0 0 0 .366 1.52l.67.67a1.5 1.5 0 0 1 0 2.122l-.67.67a1.5 1.5 0 0 0-.366 1.52l.31.92a1.5 1.5 0 0 1-.987 1.898l-.93.248a1.5 1.5 0 0 0-1.095 1.146l-.187.93a1.5 1.5 0 0 1-3.35 0l-.187-.93a1.5 1.5 0 0 0-1.095-1.146l-.93-.248a1.5 1.5 0 0 1-.987-1.898l.31-.92a1.5 1.5 0 0 0-.366-1.52l-.67-.67a1.5 1.5 0 0 1 0-2.122l.67-.67a1.5 1.5 0 0 0 .366-1.52l-.31-.92a1.5 1.5 0 0 1 .987-1.898l.93-.248a1.5 1.5 0 0 0 1.095-1.146l.187-.93ZM12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z" />
+        </svg>
+      );
+    case 'clipboard':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+          <path d="M9 3h6a2 2 0 0 1 2 2h2v16H5V5h2a2 2 0 0 1 2-2Zm0 2v1h6V5H9Zm0 6h6v2H9v-2Zm0 4h4v2H9v-2Z" />
+        </svg>
+      );
+    case 'sliders':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+          <path d="M5 4h4v3h2v3H9v2h2v3H9v3H5v-3H3v-3h2v-2H3V7h2V4Zm14 0v3h2v3h-2v2h2v3h-2v3h-4v-3h-2v-3h2v-2h-2V7h2V4h4Z" />
+        </svg>
+      );
+    default:
+      return null;
+  }
 }
 
 export function AdminSidebar({ isCollapsed }: SidebarProps) {
@@ -64,7 +124,7 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
 
   return (
     <div className={`${isCollapsed ? 'w-16' : 'w-[260px] md:w-[300px]'} font-roboto bg-white dark:bg-black border-r border-border dark:border-slate-800 h-screen flex flex-col transition-all duration-300 z-40 relative p-2`}>
-      <div className="p-2 h-16 flex items-center justify-center border-b border-border">
+      <div className={`p-2 h-16 flex items-center ${isCollapsed ? 'justify-center' : 'justify-start pl-4'} border-b border-border`}>
         <Link href="/" className="block">
           {!isCollapsed && (
             <img 
@@ -89,26 +149,29 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
             {!isCollapsed && (
               <div className="mx-2 my-1 px-3 py-3">
                 <div className="flex items-center gap-3">
-                  <section.groupIcon className="w-6 h-6 text-black dark:text-slate-300" />
+                  <FlatIcon name={section.groupIconName} className="w-6 h-6 text-[#3A3A3A] dark:text-slate-200" />
                   <span className="sidebar-section-header text-[16px] text-black dark:text-slate-300">{section.group}</span>
                 </div>
               </div>
             )}
             <div className={`${!isCollapsed ? 'ml-9 mr-2 space-y-1' : 'space-y-1'}`}>
               {section.items.map((item) => {
-                const Icon = item.icon;
+                const iconName = (item as any).iconName;
                 const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href + '/'));
 
                 return (
                   <Link key={item.href} href={item.href} className="block group">
                     <div
-                      className={`flex items-center min-h-12 rounded-lg ${isCollapsed ? 'justify-center p-3 mx-2 my-1' : 'px-3 py-3'} gap-3 transition-all ${isActive
-                        ? 'bg-sky-600 text-white border-r-4 border-sky-400'
-                        : 'text-black dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-900 hover:text-black dark:hover:text-white'
+                      className={`flex items-center min-h-12 rounded-lg ${isCollapsed ? 'justify-center p-3 mx-2 my-1' : 'px-3 py-3'} gap-3 transition-colors ${isActive
+                        ? 'bg-slate-200 dark:bg-slate-800 text-[#1f2937] dark:text-white'
+                        : 'text-[#3A3A3A] dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900'
                         }`}
                     >
-                      <Icon className={`${isCollapsed ? 'w-6 h-6' : 'w-5 h-5'} shrink-0 ${isActive ? 'text-white' : 'text-black dark:text-slate-300'}`} />
-                      {!isCollapsed && <span className={`sidebar-page-item text-[16px] ${isActive ? 'text-white' : ''}`}>{item.label}</span>}
+                      <FlatIcon
+                        name={iconName}
+                        className={`${isCollapsed ? 'w-6 h-6' : 'w-5 h-5'} shrink-0 ${isActive ? 'text-[#1f2937] dark:text-white' : 'text-[#3A3A3A] dark:text-slate-200'}`}
+                      />
+                      {!isCollapsed && <span className={`sidebar-page-item text-[16px] ${isActive ? 'font-semibold text-[#1f2937] dark:text-white' : 'text-[#3A3A3A] dark:text-slate-200'}`}>{item.label}</span>}
                     </div>
                   </Link>
                 );
