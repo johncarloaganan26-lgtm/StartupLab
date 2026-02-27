@@ -5,6 +5,8 @@ import bcrypt from 'bcryptjs';
 
 export const runtime = 'nodejs';
 
+const passwordPolicy = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -15,8 +17,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Token and password are required' }, { status: 400 });
     }
 
-    if (password.length < 6) {
-      return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 });
+    if (!passwordPolicy.test(password)) {
+      return NextResponse.json(
+        { error: 'Password must be at least 8 characters and include upper, lower, number, and special character.' },
+        { status: 400 }
+      );
     }
 
     // Verify token

@@ -20,9 +20,14 @@ const profileSchema = z.object({
   bio: z.string().optional(),
 });
 
+const passwordPolicy = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
 const passwordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required'),
-  newPassword: z.string().min(6, 'New password must be at least 6 characters'),
+  newPassword: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(passwordPolicy, 'Use upper, lower, number, and special character'),
   confirmPassword: z.string().min(1, 'Please confirm your new password'),
 }).refine((data) => data.newPassword === data.confirmPassword, {
   message: "Passwords don't match",
@@ -61,11 +66,14 @@ export default function ProfilePage() {
   const {
     register: registerPw,
     handleSubmit: handleSubmitPw,
+    watch: watchPw,
     formState: { errors: pwErrors },
     reset: resetPw,
   } = useForm<PasswordFormData>({
     resolver: zodResolver(passwordSchema),
   });
+  const newPasswordValue = watchPw('newPassword') || '';
+  const [showPasswordHints, setShowPasswordHints] = useState(false);
 
   const onSubmit = async (data: ProfileFormData) => {
     setIsLoading(true);
@@ -287,10 +295,24 @@ export default function ProfilePage() {
                         placeholder="••••••••"
                         {...registerPw('newPassword')}
                         disabled={isChangingPassword}
+                        onFocus={() => setShowPasswordHints(true)}
+                        onBlur={() => setShowPasswordHints(newPasswordValue.length > 0)}
                         className="w-full"
                       />
                       {pwErrors.newPassword && (
                         <p className="text-sm text-destructive mt-1">{pwErrors.newPassword.message}</p>
+                      )}
+                      {showPasswordHints && (
+                        <div className="mt-2 text-xs text-foreground/80 bg-muted/40 border border-border rounded-md p-3">
+                          <p className="font-semibold text-foreground">Password Requirements</p>
+                          <ul className="list-disc list-inside space-y-0.5">
+                            <li>At least 8 characters</li>
+                            <li>At least 1 uppercase letter (A-Z)</li>
+                            <li>At least 1 lowercase letter (a-z)</li>
+                            <li>At least 1 number (0-9)</li>
+                            <li>At least 1 special character (!@#$%^&*)</li>
+                          </ul>
+                        </div>
                       )}
                     </div>
 
@@ -368,3 +390,4 @@ export default function ProfilePage() {
     </AuthGuard>
   );
 }
+

@@ -7,6 +7,8 @@ import { authCookieName, verifyAuthToken } from '@/lib/auth'
 
 export const runtime = 'nodejs'
 
+const passwordPolicy = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/
+
 export async function PUT(req: Request) {
     try {
         const cookieStore = await cookies()
@@ -26,8 +28,11 @@ export async function PUT(req: Request) {
             return NextResponse.json({ error: 'Current and new passwords are required.' }, { status: 400 })
         }
 
-        if (newPassword.length < 6) {
-            return NextResponse.json({ error: 'New password must be at least 6 characters.' }, { status: 400 })
+        if (!passwordPolicy.test(newPassword)) {
+            return NextResponse.json(
+                { error: 'New password must be at least 8 characters and include upper, lower, number, and special character.' },
+                { status: 400 }
+            )
         }
 
         const [rows] = await getDb().execute<RowDataPacket[]>(

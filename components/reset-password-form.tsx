@@ -9,9 +9,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
 
+const passwordPolicy = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
 const resetPasswordSchema = z.object({
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(passwordPolicy, 'Use upper, lower, number, and special character'),
+  confirmPassword: z.string().min(8, 'Password must be at least 8 characters'),
 }).refine(data => data.password === data.confirmPassword, {
   message: 'Passwords do not match',
   path: ['confirmPassword'],
@@ -32,10 +37,13 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
   });
+  const passwordValue = watch('password') || '';
+  const [showPasswordHints, setShowPasswordHints] = useState(false);
 
   const onSubmit = async (data: ResetPasswordFormData) => {
     try {
@@ -100,10 +108,24 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
           placeholder="********"
           {...register('password')}
           disabled={isLoading}
+          onFocus={() => setShowPasswordHints(true)}
+          onBlur={() => setShowPasswordHints(passwordValue.length > 0)}
           className="w-full text-white placeholder:text-white/60 border-white/25 focus-visible:ring-white/20 focus-visible:border-white/50"
         />
         {errors.password && (
           <p className="text-sm text-rose-200 mt-1">{errors.password.message}</p>
+        )}
+        {showPasswordHints && (
+          <div className="mt-2 text-[11px] leading-5 text-white/80 bg-white/5 border border-white/10 rounded-md p-3">
+            <p className="font-semibold text-white">Password Requirements</p>
+            <ul className="list-disc list-inside space-y-0.5">
+              <li>At least 8 characters</li>
+              <li>At least 1 uppercase letter (A-Z)</li>
+              <li>At least 1 lowercase letter (a-z)</li>
+              <li>At least 1 number (0-9)</li>
+              <li>At least 1 special character (!@#$%^&*)</li>
+            </ul>
+          </div>
         )}
       </div>
 

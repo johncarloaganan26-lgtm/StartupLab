@@ -7,6 +7,8 @@ import { logActorAction } from '@/lib/audit'
 
 export const runtime = 'nodejs'
 
+const passwordPolicy = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/
+
 export async function POST(req: Request) {
   try {
     const body = await req.json()
@@ -16,6 +18,13 @@ export async function POST(req: Request) {
 
     if (!name || !email || !password) {
       return NextResponse.json({ error: 'Name, email, and password are required.' }, { status: 400 })
+    }
+
+    if (!passwordPolicy.test(password)) {
+      return NextResponse.json(
+        { error: 'Password must be at least 8 characters and include upper, lower, number, and special character.' },
+        { status: 400 }
+      )
     }
 
     const [existing] = await getDb().execute<RowDataPacket[]>(
