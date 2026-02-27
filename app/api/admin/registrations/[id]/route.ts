@@ -5,18 +5,9 @@ import { authCookieName, verifyAuthToken } from '@/lib/auth'
 import { logAdminAction } from '@/lib/audit'
 import { sendRegistrationNotificationEmail, sendEventRegistrationEmail } from '@/lib/email'
 import { createNotification, createNotificationForAdmin } from '@/lib/notifications'
+import * as z from 'zod'
 
 export const runtime = 'nodejs'
-
-async function ensureStatusEnum(conn: any) {
-  try {
-    await conn.execute(
-      "ALTER TABLE registrations MODIFY COLUMN status ENUM('pending','confirmed','attended','cancelled','waitlisted','no-show','rejected') NOT NULL DEFAULT 'pending'"
-    )
-  } catch (err: any) {
-    // Ignore if already set or lacking privilege
-  }
-}
 
 export async function PATCH(
   req: Request,
@@ -29,19 +20,20 @@ export async function PATCH(
   const payload = await verifyAuthToken(token)
   if (payload.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const body = await req.json()
-  const requestStatus: string = body.status
-  const reason = typeof body.reason === 'string' ? body.reason.trim().slice(0, 500) : ''
-  const allowedStatuses = ['pending', 'confirmed', 'attended', 'cancelled', 'waitlisted', 'no-show', 'rejected']
-  if (!requestStatus || !allowedStatuses.includes(requestStatus)) {
-    return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
-  }
+  const schema = z.object({
+    status: z.enum(['pending', 'confirmed', 'attended', 'cancelled', 'waitlisted', 'no-show', 'rejected']),
+    reason: z.string().trim().max(500).optional(),
+  })
+  const body = schema.safeParse(await req.json())
+  if (!body.success) return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
+
+  const requestStatus: string = body.data.status
+  const reason = body.data.reason || ''
   const newStatus = requestStatus
 
   const conn = await getDb().getConnection()
   try {
     await conn.beginTransaction()
-    await ensureStatusEnum(conn)
 
     // 1. Get current status and event info
     const [infoRows] = await conn.execute(

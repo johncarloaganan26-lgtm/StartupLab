@@ -3,6 +3,7 @@ import { getDb } from '@/lib/db'
 import { authCookieName, verifyAuthToken } from '@/lib/auth'
 import { cookies } from 'next/headers'
 import { logAdminAction } from '@/lib/audit'
+import * as z from 'zod'
 
 export const runtime = 'nodejs'
 
@@ -49,7 +50,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const body = await req.json()
+    const schema = z.object({
+      title: z.string().min(3),
+      description: z.string().min(10),
+      date: z.string().min(1),
+      time: z.string().min(1),
+      location: z.string().min(3),
+      totalSlots: z.number().int().min(1),
+      availableSlots: z.number().int().min(0).optional(),
+      image: z.string().url().optional().or(z.literal('')).optional(),
+      status: z.enum(['draft', 'published', 'completed', 'cancelled']).optional(),
+    })
+
+    const parsed = schema.safeParse(await req.json())
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
+    }
+
     const {
       title,
       description,
@@ -60,11 +77,7 @@ export async function POST(req: Request) {
       availableSlots,
       image,
       status,
-    } = body
-
-    if (!title || !description || !date || !time || !location || !totalSlots) {
-      return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 })
-    }
+    } = parsed.data
 
     const [result] = await getDb().execute(
       `INSERT INTO events (title, description, date, time, location, total_slots, available_slots, image_url, status)

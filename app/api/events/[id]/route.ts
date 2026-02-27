@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { getDb } from '@/lib/db'
 import { authCookieName, verifyAuthToken } from '@/lib/auth'
 import { logAdminAction } from '@/lib/audit'
+import * as z from 'zod'
 
 export const runtime = 'nodejs'
 
@@ -53,7 +54,22 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const body = await req.json()
+  const schema = z.object({
+    title: z.string().min(3).optional(),
+    description: z.string().min(10).optional(),
+    date: z.string().min(1).optional(),
+    time: z.string().min(1).optional(),
+    location: z.string().min(3).optional(),
+    totalSlots: z.number().int().min(1).optional(),
+    availableSlots: z.number().int().min(0).optional(),
+    image: z.string().url().optional().or(z.literal('')).optional(),
+    status: z.enum(['draft', 'published', 'completed', 'cancelled']).optional(),
+  })
+  const parsed = schema.safeParse(await req.json())
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
+  }
+  const body = parsed.data
 
   const conn = await getDb().getConnection()
   try {

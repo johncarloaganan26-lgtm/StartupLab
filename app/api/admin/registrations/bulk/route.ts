@@ -6,18 +6,15 @@ import { logAdminAction } from '@/lib/audit'
 import { sendRegistrationNotificationEmail, sendEventRegistrationEmail } from '@/lib/email'
 import { createNotification, createNotificationForAdmin } from '@/lib/notifications'
 import { archiveRegistrationsByIds } from '@/lib/registration-archive'
+import * as z from 'zod'
 
 export const runtime = 'nodejs'
 
-async function ensureStatusEnum(conn: any) {
-  try {
-    await conn.execute(
-      "ALTER TABLE registrations MODIFY COLUMN status ENUM('pending','confirmed','attended','cancelled','waitlisted','no-show','rejected') NOT NULL DEFAULT 'pending'"
-    )
-  } catch (err: any) {
-    // Ignore if insufficient privileges or already compatible
-  }
-}
+const bulkSchema = z.object({
+  ids: z.array(z.union([z.string(), z.number()])).min(1).max(50),
+  action: z.enum(['approve', 'reject', 'delete', 'attend', 'noshow']),
+  reason: z.string().trim().max(500).optional(),
+})
 
 export async function POST(req: Request) {
   const cookieStore = await cookies()
@@ -30,17 +27,12 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json()
-  const { ids, action } = body
-  const reason = typeof body.reason === 'string' ? body.reason.trim().slice(0, 500) : ''
-
-  if (!ids || !Array.isArray(ids) || ids.length === 0) {
-    return NextResponse.json({ error: 'No IDs provided' }, { status: 400 })
+  const parsed = bulkSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
   }
-
-  const allowedActions = ['approve', 'reject', 'delete', 'attend', 'noshow']
-  if (!action || !allowedActions.includes(action)) {
-    return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
-  }
+  const { ids, action, reason: rawReason } = parsed.data
+  const reason = rawReason || ''
 
   // Deduplicate to reduce work
   const uniqueIds = Array.from(new Set(ids.map(String)))
@@ -58,7 +50,6 @@ export async function POST(req: Request) {
   
   try {
     await conn.beginTransaction()
-    await ensureStatusEnum(conn)
 
     // Preload all registrations once
     const placeholders = uniqueIds.map(() => '?').join(',')
@@ -142,79 +133,79 @@ export async function POST(req: Request) {
         }
       }
       
+      const notificationTasks: Promise<any>[] = []
       for (const info of eligible) {
         // Update status
         await conn.execute('UPDATE registrations SET status = ? WHERE id = ?', [newStatus, info.id])
         
-        // Send notification email to support
+        // Queue emails/notifications after commit
         const eventDate = info.event_date || 'TBD'
-        await sendRegistrationNotificationEmail(
-          String(info.event_title),
-          String(info.user_name),
-          String(info.user_email),
-          eventDate,
-          displayStatus
-        )
-        
-        // Also send email to user about their status change
-        await sendEventRegistrationEmail(
-          String(info.user_email),
-          String(info.user_name),
-          String(info.event_title),
-          eventDate,
-          info.event_time || 'TBD',
-          info.event_location || 'TBD',
-          displayStatus,
-          {
-            registrationId: String(info.id),
-            eventId: String(info.event_id),
-          }
-        )
-        
-        // Create in-app notifications
         const userId = String(info.user_id)
         const eventTitle = String(info.event_title)
         const userName = String(info.user_name)
-        
         const reasonSuffix = effectiveReason ? ` Reason: ${effectiveReason}` : ''
 
-        if (newStatus === 'confirmed') {
-          await createNotification({
-            userId,
-            title: 'Registration Approved',
-            message: `Your registration for "${eventTitle}" has been approved!`,
-            type: 'registration_approved'
-          })
-          await createNotificationForAdmin({
-            title: 'Registration Approved',
-            message: `${userName}'s registration for "${eventTitle}" has been approved.`,
-            type: 'registration_approved'
-          })
-        } else if (displayStatus === 'rejected' || displayStatus === 'no-show' || displayStatus === 'cancelled') {
-          await createNotification({
-            userId,
-            title: 'Registration Rejected',
-            message: `Your registration for "${eventTitle}" has been ${displayStatus === 'no-show' ? 'marked as no show' : displayStatus}.${reasonSuffix}`,
-            type: 'registration_rejected'
-          })
-          await createNotificationForAdmin({
-            title: 'Registration Rejected',
-            message: `${userName}'s registration for "${eventTitle}" has been ${displayStatus === 'no-show' ? 'marked as no show' : displayStatus}.${reasonSuffix}`,
-            type: 'registration_rejected'
-          })
-        } else if (newStatus === 'attended') {
-          await createNotification({
-            userId,
-            title: 'Attendance Marked',
-            message: `Your attendance for "${eventTitle}" has been recorded. Thank you!`,
-            type: 'registration_attended'
-          })
-          await createNotificationForAdmin({
-            title: 'Attendance Marked',
-            message: `${userName} marked as attended for "${eventTitle}".`,
-            type: 'registration_attended'
-          })
-        }
+        notificationTasks.push(
+          Promise.allSettled([
+            sendRegistrationNotificationEmail(
+              String(eventTitle),
+              String(userName),
+              String(info.user_email),
+              eventDate,
+              displayStatus
+            ),
+            sendEventRegistrationEmail(
+              String(info.user_email),
+              String(userName),
+              String(eventTitle),
+              eventDate,
+              info.event_time || 'TBD',
+              info.event_location || 'TBD',
+              displayStatus,
+              {
+                registrationId: String(info.id),
+                eventId: String(info.event_id),
+              }
+            ),
+            displayStatus === 'confirmed'
+              ? createNotification({
+                  userId,
+                  title: 'Registration Approved',
+                  message: `Your registration for "${eventTitle}" has been approved!`,
+                  type: 'registration_approved'
+                })
+              : displayStatus === 'attended'
+                ? createNotification({
+                    userId,
+                    title: 'Attendance Marked',
+                    message: `Your attendance for "${eventTitle}" has been recorded. Thank you!`,
+                    type: 'registration_attended'
+                  })
+                : createNotification({
+                    userId,
+                    title: 'Registration Rejected',
+                    message: `Your registration for "${eventTitle}" has been ${displayStatus === 'no-show' ? 'marked as no show' : displayStatus}.${reasonSuffix}`,
+                    type: 'registration_rejected'
+                  }),
+            displayStatus === 'confirmed'
+              ? createNotificationForAdmin({
+                  title: 'Registration Approved',
+                  message: `${userName}'s registration for "${eventTitle}" has been approved.`,
+                  type: 'registration_approved'
+                })
+              : displayStatus === 'attended'
+                ? createNotificationForAdmin({
+                    title: 'Attendance Marked',
+                    message: `${userName} marked as attended for "${eventTitle}".`,
+                    type: 'registration_attended'
+                  })
+                : createNotificationForAdmin({
+                    title: 'Registration Rejected',
+                    message: `${userName}'s registration for "${eventTitle}" has been ${displayStatus === 'no-show' ? 'marked as no show' : displayStatus}.${reasonSuffix}`,
+                    type: 'registration_rejected'
+                  }),
+          ])
+        )
       }
       
       logAdminAction({
@@ -234,6 +225,10 @@ export async function POST(req: Request) {
     }
 
     await conn.commit()
+    // Send notifications concurrently outside the transaction
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    Promise.allSettled(notificationTasks);
+
     return NextResponse.json({ ok: true, processed: eligibleIdsList.length, skipped: skippedIds.length })
   } catch (err: any) {
     await conn.rollback()

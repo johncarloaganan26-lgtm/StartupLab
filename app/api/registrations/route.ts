@@ -5,6 +5,7 @@ import { authCookieName, verifyAuthToken } from '@/lib/auth'
 import { logUserAction } from '@/lib/audit'
 import { sendEventRegistrationEmail, sendRegistrationNotificationEmail } from '@/lib/email'
 import { createNotification, createNotificationForAdmin } from '@/lib/notifications'
+import * as z from 'zod'
 
 export const runtime = 'nodejs'
 
@@ -57,11 +58,11 @@ export async function POST(req: Request) {
     if (!token) throw new Error('Unauthorized')
     const payload = await verifyAuthToken(token)
 
-    const body = await req.json()
-    const eventId = Number(body.eventId)
-    if (!eventId) {
-      return NextResponse.json({ error: 'eventId is required.' }, { status: 400 })
-    }
+    const schema = z.object({ eventId: z.union([z.string(), z.number()]) })
+    const parsed = schema.safeParse(await req.json())
+    if (!parsed.success) return NextResponse.json({ error: 'eventId is required.' }, { status: 400 })
+    const eventId = Number(parsed.data.eventId)
+    if (!eventId) return NextResponse.json({ error: 'eventId is required.' }, { status: 400 })
 
     const [existing] = await withRetry(() =>
       getDb().execute(
