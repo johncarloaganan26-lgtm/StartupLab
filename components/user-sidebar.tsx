@@ -83,18 +83,22 @@ export function UserSidebar({ isCollapsed }: SidebarProps) {
                 const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'));
 
                 return (
-                  <Link key={item.href} href={item.href} className="block group">
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="block group focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                  >
                     <div
-                      className={`flex items-center min-h-12 rounded-lg ${isCollapsed ? 'justify-center p-3 mx-2 my-1' : 'px-3 py-3'} gap-3 transition-colors ${isActive
-                        ? 'bg-slate-200 dark:bg-slate-800 text-[#1f2937] dark:text-white'
+                      className={`flex items-center min-h-12 ${isCollapsed ? 'justify-center p-3 my-1' : 'pl-4 pr-3 py-3'} gap-3 transition-colors focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 ${isActive
+                        ? 'text-white bg-[#00a8e8] border-l-4 border-[#008fc4]'
                         : 'text-[#3A3A3A] dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900'
                         }`}
                     >
                       <FlatIcon
                         name={iconName}
-                        className={`${isCollapsed ? 'w-6 h-6' : 'w-5 h-5'} shrink-0 ${isActive ? 'text-[#1f2937] dark:text-white' : 'text-[#3A3A3A] dark:text-slate-200'}`}
+                        className={`${isCollapsed ? 'w-6 h-6' : 'w-5 h-5'} shrink-0 ${isActive ? 'text-white' : 'text-[#3A3A3A] dark:text-slate-200'}`}
                       />
-                      {!isCollapsed && <span className={`sidebar-page-item text-[16px] ${isActive ? 'font-semibold text-[#1f2937] dark:text-white' : 'text-[#3A3A3A] dark:text-slate-200'}`}>{item.label}</span>}
+                      {!isCollapsed && <span className={`sidebar-page-item text-[16px] ${isActive ? 'font-semibold text-white' : 'text-[#3A3A3A] dark:text-slate-200'}`}>{item.label}</span>}
                     </div>
                   </Link>
                 );

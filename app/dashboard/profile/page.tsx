@@ -22,17 +22,19 @@ const profileSchema = z.object({
 
 const passwordPolicy = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 
-const passwordSchema = z.object({
-  currentPassword: z.string().min(1, 'Current password is required'),
-  newPassword: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(passwordPolicy, 'Use upper, lower, number, and special character'),
-  confirmPassword: z.string().min(1, 'Please confirm your new password'),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ['confirmPassword'],
-});
+const passwordSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'Current password is required'),
+    newPassword: z
+      .string()
+      .min(8, 'Password must be at least 8 characters')
+      .regex(passwordPolicy, 'Use upper, lower, number, and special character'),
+    confirmPassword: z.string().min(1, 'Please confirm your new password'),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 type PasswordFormData = z.infer<typeof passwordSchema>;
@@ -43,10 +45,10 @@ export default function ProfilePage() {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Password state
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [showPasswordHints, setShowPasswordHints] = useState(false);
 
   const {
     register,
@@ -73,7 +75,6 @@ export default function ProfilePage() {
     resolver: zodResolver(passwordSchema),
   });
   const newPasswordValue = watchPw('newPassword') || '';
-  const [showPasswordHints, setShowPasswordHints] = useState(false);
 
   const onSubmit = async (data: ProfileFormData) => {
     setIsLoading(true);
@@ -136,159 +137,92 @@ export default function ProfilePage() {
   return (
     <AuthGuard requiredRole="attendee">
       <DashboardLayout>
-        <div className="max-w-2xl space-y-8">
-          <div>
-            <h1 className="text-3xl lg:text-4xl font-bold text-foreground">
-              My Profile
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Manage your personal information and account settings
-            </p>
+        <div className="p-4 space-y-6 max-w-6xl mx-auto">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-3xl lg:text-4xl font-bold text-foreground">My Profile</h1>
+            <p className="text-sm text-muted-foreground">Manage your personal info and security settings.</p>
           </div>
 
-          <div className="space-y-6">
-            {/* Profile Information */}
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle>Profile Information</CardTitle>
-                <CardDescription>Update your personal details</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
-                        Full Name
-                      </label>
-                      <Input
-                        id="name"
-                        placeholder="Your Name"
-                        {...register('name')}
-                        disabled={isLoading}
-                        className="w-full"
-                      />
-                      {errors.name && (
-                        <p className="text-sm text-destructive mt-1">{errors.name.message}</p>
-                      )}
+          <div className="grid lg:grid-cols-3 gap-6">
+            <div className="space-y-6 lg:col-span-2">
+              <Card className="bg-card border-border shadow-sm">
+                <CardHeader>
+                  <CardTitle>Profile Information</CardTitle>
+                  <CardDescription>Update your personal details</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <Field id="name" label="Full Name" error={errors.name?.message}>
+                        <Input id="name" placeholder="Your Name" {...register('name')} disabled={isLoading} />
+                      </Field>
+                      <Field id="email" label="Email Address" error={errors.email?.message}>
+                        <Input id="email" type="email" placeholder="you@example.com" {...register('email')} disabled={isLoading} />
+                      </Field>
                     </div>
 
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
-                        Email Address
-                      </label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="you@example.com"
-                        {...register('email')}
-                        disabled={isLoading}
-                        className="w-full"
-                      />
-                      {errors.email && (
-                        <p className="text-sm text-destructive mt-1">{errors.email.message}</p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="company" className="block text-sm font-medium text-foreground mb-2">
-                        Company (Optional)
-                      </label>
-                      <Input
-                        id="company"
-                        placeholder="Your Company"
-                        {...register('company')}
-                        disabled={isLoading}
-                        className="w-full"
-                      />
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <Field id="company" label="Company (Optional)">
+                        <Input id="company" placeholder="Your Company" {...register('company')} disabled={isLoading} />
+                      </Field>
+                      <Field id="phone" label="Phone (Optional)">
+                        <Input id="phone" placeholder="+63 912 345 6789" {...register('phone')} disabled={isLoading} />
+                      </Field>
                     </div>
 
-                    <div>
-                      <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">
-                        Phone (Optional)
-                      </label>
-                      <Input
-                        id="phone"
-                        placeholder="+63 912 345 6789"
-                        {...register('phone')}
-                        disabled={isLoading}
-                        className="w-full"
-                      />
-                    </div>
-                  </div>
+                    <Field id="bio" label="Bio (Optional)">
+                      <Input id="bio" placeholder="Tell us about yourself" {...register('bio')} disabled={isLoading} />
+                    </Field>
 
-                  <div>
-                    <label htmlFor="bio" className="block text-sm font-medium text-foreground mb-2">
-                      Bio (Optional)
-                    </label>
-                    <Input
-                      id="bio"
-                      placeholder="Tell us about yourself"
-                      {...register('bio')}
-                      disabled={isLoading}
-                      className="w-full"
-                    />
-                  </div>
-
-                  {successMessage && (
-                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
-                      <Check className="w-5 h-5 text-green-600" />
-                      <p className="text-green-800 text-sm">{successMessage}</p>
-                    </div>
-                  )}
-
-                  {errorMessage && (
-                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-                      <AlertCircle className="w-5 h-5 text-red-600" />
-                      <p className="text-red-800 text-sm">{errorMessage}</p>
-                    </div>
-                  )}
-
-                  <div className="flex gap-3 pt-4">
-                    <Button
-                      type="submit"
-                      disabled={isLoading}
-                      className="gap-2"
-                    >
-                      {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                      {isLoading ? 'Saving...' : 'Save Changes'}
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-
-            {/* Change Password */}
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle>Change Password</CardTitle>
-                <CardDescription>Update your account password</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmitPw(onPasswordSubmit)} className="space-y-4">
-                  <div>
-                    <label htmlFor="currentPassword" className="block text-sm font-medium text-foreground mb-2">
-                      Current Password
-                    </label>
-                    <Input
-                      id="currentPassword"
-                      type="password"
-                      placeholder="••••••••"
-                      {...registerPw('currentPassword')}
-                      disabled={isChangingPassword}
-                      className="w-full"
-                    />
-                    {pwErrors.currentPassword && (
-                      <p className="text-sm text-destructive mt-1">{pwErrors.currentPassword.message}</p>
+                    {successMessage && (
+                      <Banner tone="success" message={successMessage} />
                     )}
-                  </div>
+                    {errorMessage && (
+                      <Banner tone="error" message={errorMessage} />
+                    )}
 
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="newPassword" className="block text-sm font-medium text-foreground mb-2">
-                        New Password
-                      </label>
+                    <div className="flex gap-3 pt-1">
+                      <Button type="submit" disabled={isLoading} className="gap-2">
+                        {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                        {isLoading ? 'Saving...' : 'Save Changes'}
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card border-border shadow-sm">
+                <CardHeader>
+                  <CardTitle>Account Information</CardTitle>
+                </CardHeader>
+                <CardContent className="grid sm:grid-cols-2 gap-4">
+                  <InfoTile label="Account Type" value={user?.role || 'attendee'} />
+                  <InfoTile label="Member Since" value={memberSince} />
+                  <InfoTile label="Email" value={user?.email || '—'} />
+                  <InfoTile label="Name" value={user?.name || '—'} />
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="space-y-6">
+              <Card className="bg-card border-border shadow-sm">
+                <CardHeader>
+                  <CardTitle>Change Password</CardTitle>
+                  <CardDescription>Keep your account secure</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleSubmitPw(onPasswordSubmit)} className="space-y-4">
+                    <Field id="currentPassword" label="Current Password" error={pwErrors.currentPassword?.message}>
+                      <Input
+                        id="currentPassword"
+                        type="password"
+                        placeholder="••••••••"
+                        {...registerPw('currentPassword')}
+                        disabled={isChangingPassword}
+                      />
+                    </Field>
+
+                    <Field id="newPassword" label="New Password" error={pwErrors.newPassword?.message}>
                       <Input
                         id="newPassword"
                         type="password"
@@ -297,93 +231,42 @@ export default function ProfilePage() {
                         disabled={isChangingPassword}
                         onFocus={() => setShowPasswordHints(true)}
                         onBlur={() => setShowPasswordHints(newPasswordValue.length > 0)}
-                        className="w-full"
                       />
-                      {pwErrors.newPassword && (
-                        <p className="text-sm text-destructive mt-1">{pwErrors.newPassword.message}</p>
-                      )}
                       {showPasswordHints && (
                         <div className="mt-2 text-xs text-foreground/80 bg-muted/40 border border-border rounded-md p-3">
                           <p className="font-semibold text-foreground">Password Requirements</p>
                           <ul className="list-disc list-inside space-y-0.5">
                             <li>At least 8 characters</li>
-                            <li>At least 1 uppercase letter (A-Z)</li>
-                            <li>At least 1 lowercase letter (a-z)</li>
-                            <li>At least 1 number (0-9)</li>
-                            <li>At least 1 special character (!@#$%^&*)</li>
+                            <li>Uppercase, lowercase, number</li>
+                            <li>One special character (!@#$%^&*)</li>
                           </ul>
                         </div>
                       )}
-                    </div>
+                    </Field>
 
-                    <div>
-                      <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-2">
-                        Confirm New Password
-                      </label>
+                    <Field id="confirmPassword" label="Confirm New Password" error={pwErrors.confirmPassword?.message}>
                       <Input
                         id="confirmPassword"
                         type="password"
                         placeholder="••••••••"
                         {...registerPw('confirmPassword')}
                         disabled={isChangingPassword}
-                        className="w-full"
                       />
-                      {pwErrors.confirmPassword && (
-                        <p className="text-sm text-destructive mt-1">{pwErrors.confirmPassword.message}</p>
-                      )}
+                    </Field>
+
+                    {passwordSuccess && <Banner tone="success" message={passwordSuccess} />}
+                    {passwordError && <Banner tone="error" message={passwordError} />}
+
+                    <div className="flex gap-3 pt-1">
+                      <Button type="submit" variant="outline" disabled={isChangingPassword} className="gap-2">
+                        {isChangingPassword && <Loader2 className="w-4 h-4 animate-spin" />}
+                        {isChangingPassword ? 'Changing...' : 'Change Password'}
+                      </Button>
                     </div>
-                  </div>
-
-                  {passwordSuccess && (
-                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
-                      <Check className="w-5 h-5 text-green-600" />
-                      <p className="text-green-800 text-sm">{passwordSuccess}</p>
-                    </div>
-                  )}
-
-                  {passwordError && (
-                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-                      <AlertCircle className="w-5 h-5 text-red-600" />
-                      <p className="text-red-800 text-sm">{passwordError}</p>
-                    </div>
-                  )}
-
-                  <div className="flex gap-3 pt-2">
-                    <Button
-                      type="submit"
-                      variant="outline"
-                      disabled={isChangingPassword}
-                      className="gap-2"
-                    >
-                      {isChangingPassword && <Loader2 className="w-4 h-4 animate-spin" />}
-                      {isChangingPassword ? 'Changing...' : 'Change Password'}
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-
-            {/* Account Info */}
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle>Account Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Account Type</p>
-                    <p className="font-medium text-foreground capitalize mt-1">
-                      {user?.role || 'attendee'}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-muted-foreground">Member Since</p>
-                    <p className="font-medium text-foreground mt-1">{memberSince}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </DashboardLayout>
@@ -391,3 +274,48 @@ export default function ProfilePage() {
   );
 }
 
+function Field({
+  id,
+  label,
+  error,
+  children,
+}: {
+  id: string;
+  label: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label htmlFor={id} className="block text-sm font-medium text-foreground mb-2">
+        {label}
+      </label>
+      {children}
+      {error && <p className="text-sm text-destructive mt-1">{error}</p>}
+    </div>
+  );
+}
+
+function InfoTile({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="border border-border rounded-md p-3 bg-muted/30">
+      <p className="text-xs text-muted-foreground uppercase tracking-wide">{label}</p>
+      <p className="text-sm font-semibold text-foreground mt-1 break-words">{value}</p>
+    </div>
+  );
+}
+
+function Banner({ tone, message }: { tone: 'success' | 'error'; message: string }) {
+  const styles =
+    tone === 'success'
+      ? 'bg-green-50 border border-green-200 text-green-800'
+      : 'bg-red-50 border border-red-200 text-red-800';
+  const Icon = tone === 'success' ? Check : AlertCircle;
+
+  return (
+    <div className={`p-4 rounded-lg flex items-center gap-2 ${styles}`}>
+      <Icon className="w-5 h-5" />
+      <p className="text-sm">{message}</p>
+    </div>
+  );
+}

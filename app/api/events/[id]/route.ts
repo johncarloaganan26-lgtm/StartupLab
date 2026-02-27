@@ -1,90 +1,104 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { getDb } from '@/lib/db'
-import { requireAdminAuth } from '@/lib/admin-auth'
+import { authCookieName, verifyAuthToken } from '@/lib/auth'
 import { logAdminAction } from '@/lib/audit'
 
 export const runtime = 'nodejs'
 
-export async function GET(
-  _req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+function serialize(row: any) {
+  return {
+    id: String(row.id),
+    title: row.title,
+    description: row.description,
+    date: row.date,
+    time: row.time,
+    location: row.location,
+    totalSlots: row.total_slots,
+    availableSlots: row.available_slots,
+    image: row.image_url,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   try {
-    const { id } = await params
     const [rows] = await getDb().execute(
-      'SELECT id, title, description, date, time, location, total_slots, available_slots, image_url, status FROM events WHERE id = ? AND deleted_at IS NULL LIMIT 1',
+      `SELECT id, title, description, date, time, location, total_slots, available_slots, image_url, status, created_at, updated_at
+       FROM events
+       WHERE id = ? AND deleted_at IS NULL
+       LIMIT 1`,
       [id]
     )
-
-    const results = rows as any[]
-    if (!results.length) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-    const row = results[0] as any
-    return NextResponse.json({
-      event: {
-        id: String(row.id),
-        title: row.title,
-        description: row.description,
-        date: row.date,
-        time: row.time,
-        location: row.location,
-        totalSlots: row.total_slots,
-        availableSlots: row.available_slots,
-        image: row.image_url,
-        status: row.status,
-      },
-    })
-  } catch (error) {
-    console.error('Get event error:', error)
+    const row = (rows as any[])[0]
+    if (!row) return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+    return NextResponse.json({ event: serialize(row) })
+  } catch (err) {
+    console.error('Get event failed', err)
     return NextResponse.json({ error: 'Failed to fetch event' }, { status: 500 })
   }
 }
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const cookieStore = await cookies()
+  const token = cookieStore.get(authCookieName)?.value
+  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const payload = await verifyAuthToken(token)
+  if (payload.role !== 'admin') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  const body = await req.json()
+
+  const conn = await getDb().getConnection()
   try {
-    const { id } = await params
-    const payload = await requireAdminAuth()
-
-    const body = await req.json()
-
-    const [existingRows] = await getDb().execute(
-      'SELECT title FROM events WHERE id = ? LIMIT 1',
+    // Load existing event
+    const [rows] = await conn.execute(
+      'SELECT id, title, description, date, time, location, total_slots, available_slots, image_url, status FROM events WHERE id = ? AND deleted_at IS NULL',
       [id]
     )
-    const existingTitle =
-      (existingRows as any[]).length > 0 ? String((existingRows as any[])[0].title) : null
+    const current = (rows as any[])[0]
+    if (!current) return NextResponse.json({ error: 'Event not found' }, { status: 404 })
 
-    const mapping: Record<string, string> = {
-      title: 'title',
-      description: 'description',
-      date: 'date',
-      time: 'time',
-      location: 'location',
-      status: 'status',
-      totalSlots: 'total_slots',
-      availableSlots: 'available_slots',
-      image: 'image_url',
-    }
-    const updates: string[] = []
-    const values: any[] = []
-
-    for (const key of Object.keys(mapping)) {
-      if (body[key] !== undefined) {
-        updates.push(`${mapping[key]} = ?`)
-        values.push(body[key])
-      }
+    const next = {
+      title: body.title ?? current.title,
+      description: body.description ?? current.description,
+      date: body.date ?? current.date,
+      time: body.time ?? current.time,
+      location: body.location ?? current.location,
+      total_slots: body.totalSlots ?? current.total_slots,
+      available_slots: body.availableSlots ?? current.available_slots,
+      image_url: body.image ?? current.image_url,
+      status: body.status ?? current.status,
     }
 
-    if (!updates.length) {
-      return NextResponse.json({ error: 'No changes provided.' }, { status: 400 })
+    // Guard: available_slots cannot exceed total_slots
+    if (Number(next.available_slots) > Number(next.total_slots)) {
+      next.available_slots = next.total_slots
     }
 
-    values.push(id)
-    await getDb().execute(
-      `UPDATE events SET ${updates.join(', ')} WHERE id = ? AND deleted_at IS NULL`,
-      values
+    await conn.execute(
+      `UPDATE events
+         SET title = ?, description = ?, date = ?, time = ?, location = ?,
+             total_slots = ?, available_slots = ?, image_url = ?, status = ?, updated_at = NOW()
+       WHERE id = ?`,
+      [
+        next.title,
+        next.description,
+        next.date,
+        next.time,
+        next.location,
+        Number(next.total_slots),
+        Number(next.available_slots),
+        next.image_url,
+        next.status,
+        id,
+      ]
     )
 
     logAdminAction({
@@ -92,50 +106,27 @@ export async function PATCH(
       action: 'event.update',
       entityType: 'event',
       entityId: id,
-      details: {
-        eventTitle: String(body?.title ?? existingTitle ?? 'Unknown event'),
-        updates: Object.keys(body ?? {}),
+      details: { title: next.title },
+    })
+
+    return NextResponse.json({
+      event: {
+        id: String(id),
+        title: next.title,
+        description: next.description,
+        date: next.date,
+        time: next.time,
+        location: next.location,
+        totalSlots: Number(next.total_slots),
+        availableSlots: Number(next.available_slots),
+        image: next.image_url,
+        status: next.status,
       },
     })
-    return NextResponse.json({ ok: true })
-  } catch (error) {
-    if (error instanceof NextResponse) return error
-    console.error('Update event error:', error)
-    return NextResponse.json({ error: 'Failed to update event' }, { status: 500 })
-  }
-}
-
-export async function DELETE(
-  _req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params
-    const payload = await requireAdminAuth()
-
-    const [existingRows] = await getDb().execute(
-      'SELECT title FROM events WHERE id = ? LIMIT 1',
-      [id]
-    )
-    const existingTitle =
-      (existingRows as any[]).length > 0 ? String((existingRows as any[])[0].title) : null
-
-    await getDb().execute(
-      'UPDATE events SET deleted_at = CURRENT_TIMESTAMP, deleted_by = ? WHERE id = ? AND deleted_at IS NULL',
-      [payload.sub, id]
-    )
-
-    logAdminAction({
-      adminUserId: payload.sub,
-      action: 'event.archive',
-      entityType: 'event',
-      entityId: id,
-      details: { eventTitle: existingTitle ?? 'Unknown event' },
-    })
-    return NextResponse.json({ ok: true })
-  } catch (error) {
-    if (error instanceof NextResponse) return error
-    console.error('Delete event error:', error)
-    return NextResponse.json({ error: 'Failed to delete event' }, { status: 500 })
+  } catch (err: any) {
+    console.error('Update event failed', err)
+    return NextResponse.json({ error: err.message || 'Failed to update event.' }, { status: 500 })
+  } finally {
+    conn.release()
   }
 }

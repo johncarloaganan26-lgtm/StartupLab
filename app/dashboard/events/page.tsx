@@ -35,7 +35,7 @@ export default function EventsPage() {
   useEffect(() => { setCurrentPage(1); }, [search]);
 
   const filtered = useMemo(() => {
-    let data = events.filter(e => e.status === 'published'); // Only show published events to attendees
+    let data = events.filter(e => e.status === 'published' || e.status === 'completed'); // Show live and completed (read-only)
 
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -57,6 +57,7 @@ export default function EventsPage() {
 
   const selectedEvent = events.find(e => e.id === selectedEventId);
   const isAlreadyRegistered = selectedEventId ? isRegisteredForEvent(selectedEventId) : false;
+  const isCompleted = selectedEvent?.status === 'completed';
   const DESCRIPTION_PREVIEW_CHARS = 320;
   const descriptionText = (selectedEvent?.description ?? '').trim();
   const isLongDescription = descriptionText.length > DESCRIPTION_PREVIEW_CHARS;
@@ -67,6 +68,7 @@ export default function EventsPage() {
 
   const handleRegister = async () => {
     if (!selectedEventId) return;
+    if (isCompleted) return;
     setIsRegistering(true);
 
     try {
@@ -266,7 +268,15 @@ export default function EventsPage() {
                       >
                         Close
                       </Button>
-                      {!isAlreadyRegistered ? (
+                      {isCompleted ? (
+                        <Button
+                          variant="outline"
+                          disabled
+                          className="flex-1 sm:flex-none cursor-default bg-slate-100 border-slate-200 text-slate-700"
+                        >
+                          Event Completed
+                        </Button>
+                      ) : !isAlreadyRegistered ? (
                         <Button
                           onClick={handleRegister}
                           disabled={isRegistering}

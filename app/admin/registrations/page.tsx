@@ -5,6 +5,7 @@ import { AdminLayout } from '@/components/admin-layout';
 import { AuthGuard } from '@/components/auth-guard';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
 import {
   DataToolbar,
   DataPagination,
@@ -20,7 +21,7 @@ import {
 } from '@/components/ui/dialog';
 import { useApp } from '@/contexts/app-context';
 import { formatPHDate, formatTime12h } from '@/lib/time';
-import { Check, X, Loader2, UserCheck, Trash2, Eye, Calendar, MapPin } from 'lucide-react';
+import { Check, X, Loader2, UserCheck, Trash2, Eye, Calendar, MapPin, XCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLoading } from '@/contexts/loading-context';
 
@@ -32,6 +33,12 @@ export default function RegistrationsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [selectedRegistration, setSelectedRegistration] = useState<any>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [rejectSubmitting, setRejectSubmitting] = useState(false);
+  const [actionDialogOpen, setActionDialogOpen] = useState(false);
+  const [actionType, setActionType] = useState<'approve' | 'reject' | 'attend' | 'noshow' | 'delete' | null>(null);
+  const [eligibleIds, setEligibleIds] = useState<string[]>([]);
+  const [skippedIds, setSkippedIds] = useState<string[]>([]);
   const { toast } = useToast();
   const { setLoading: setGlobalLoading } = useLoading();
 
@@ -93,8 +100,22 @@ export default function RegistrationsPage() {
       data = data.filter((r) => r.eventId === eventFilter);
     }
 
-    // Default sort by newest registration
-    data.sort((a, b) => new Date(b.registeredAt || b.createdAt).getTime() - new Date(a.registeredAt || a.createdAt).getTime());
+    // Group by status then newest
+    const order: Record<string, number> = {
+      pending: 1,
+      confirmed: 2, // Approved
+      rejected: 3,
+      attended: 4, // Completed
+      'no-show': 5,
+      cancelled: 6,
+      waitlisted: 7,
+    };
+    data.sort((a, b) => {
+      const ao = order[a.status] ?? 99;
+      const bo = order[b.status] ?? 99;
+      if (ao !== bo) return ao - bo;
+      return new Date(b.registeredAt || b.createdAt).getTime() - new Date(a.registeredAt || a.createdAt).getTime();
+    });
 
     return data;
   }, [registrations, search, statusFilter, eventFilter]);
@@ -114,11 +135,11 @@ export default function RegistrationsPage() {
       onChange: setStatusFilter,
       options: [
         { label: 'All Status', value: 'all' },
-        { label: 'Confirmed', value: 'confirmed' },
+        { label: 'Approved', value: 'confirmed' },
         { label: 'Pending', value: 'pending' },
         { label: 'Waitlisted', value: 'waitlisted' },
         { label: 'Attended', value: 'attended' },
-        { label: 'No-Show', value: 'no-show' },
+        { label: 'No Show', value: 'no-show' },
         { label: 'Cancelled', value: 'cancelled' },
       ],
     },
@@ -147,20 +168,20 @@ export default function RegistrationsPage() {
     }
   };
 
-  const handleBulkApprove = async () => {
-    if (!confirm(`Approve ${selectedIds.length} registrations?`)) return;
+  const handleBulkApprove = async (ids: string[]) => {
+    if (ids.length === 0) return;
     try {
       setGlobalLoading(true, 'Approving registrations...');
       const res = await fetch('/api/admin/registrations/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ ids: selectedIds, action: 'approve' }),
+        body: JSON.stringify({ ids, action: 'approve' }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Approval failed');
-      toast({ title: 'Success', description: `${selectedIds.length} registrations approved.` });
-      setSelectedIds([]);
+      toast({ title: 'Success', description: `${ids.length} registrations approved.` });
+      setSelectedIds((prev) => prev.filter((id) => !ids.includes(id)));
       await loadRegistrations();
     } catch (err: any) {
       toast({ title: 'Error', description: err.message || 'Some approvals failed.', variant: 'destructive' });
@@ -169,46 +190,98 @@ export default function RegistrationsPage() {
     }
   };
 
-  const handleBulkReject = async () => {
-    if (!confirm(`Reject ${selectedIds.length} registrations?`)) return;
+  const statusForId = (id: string) => registrations.find((r) => r.id === id)?.status;
+
+  const actionRules: Record<'approve' | 'reject' | 'attend' | 'noshow' | 'delete', string[]> = {
+    approve: ['pending', 'waitlisted'],
+    reject: ['pending', 'waitlisted'],
+    attend: ['confirmed'],
+    noshow: ['confirmed'],
+    delete: ['pending', 'waitlisted', 'confirmed', 'attended', 'cancelled', 'no-show', 'rejected'],
+  };
+
+  const prepareAction = (action: 'approve' | 'reject' | 'attend' | 'noshow' | 'delete', ids?: string[]) => {
+    const targetIds = ids && ids.length ? ids : selectedIds;
+    const allowed = actionRules[action];
+    const eligible = targetIds.filter((id) => allowed.includes(statusForId(id) || ''));
+    const skipped = targetIds.filter((id) => !allowed.includes(statusForId(id) || ''));
+    setActionType(action);
+    setEligibleIds(eligible);
+    setSkippedIds(skipped);
+    if (action !== 'reject') setRejectReason('');
+    setActionDialogOpen(true);
+  };
+
+  const handleSubmitReject = async (ids: string[]) => {
+    if (ids.length === 0) return;
+    setRejectSubmitting(true);
     try {
-      setGlobalLoading(true, 'Rejecting registrations...');
-      const res = await fetch('/api/admin/registrations/bulk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ ids: selectedIds, action: 'reject' }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Rejection failed');
-      toast({ title: 'Success', description: `${selectedIds.length} registrations rejected.` });
-      setSelectedIds([]);
+      if (ids.length === 1) {
+        await rejectRegistration(ids[0], rejectReason || undefined);
+      } else {
+        setGlobalLoading(true, 'Rejecting registrations...');
+        const res = await fetch('/api/admin/registrations/bulk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ ids, action: 'reject', reason: rejectReason }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Rejection failed');
+        toast({ title: 'Success', description: `${ids.length} registrations rejected.` });
+      }
+      setSelectedIds((prev) => prev.filter((id) => !ids.includes(id)));
       await loadRegistrations();
+      refreshGlobalRegistrations();
+      setRejectReason('');
     } catch (err: any) {
-      toast({ title: 'Error', description: err.message || 'Some rejections failed.', variant: 'destructive' });
+      toast({ title: 'Error', description: err.message || 'Rejection failed.', variant: 'destructive' });
     } finally {
+      setRejectSubmitting(false);
       setGlobalLoading(false);
     }
   };
 
-  const handleBulkDelete = async () => {
-    if (!confirm(`Delete ${selectedIds.length} registrations? This cannot be undone.`)) return;
+  const handleBulkDelete = async (ids: string[]) => {
+    if (ids.length === 0) return;
     try {
       setGlobalLoading(true, 'Deleting registrations...');
       const res = await fetch('/api/admin/registrations/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ ids: selectedIds, action: 'delete' }),
+        body: JSON.stringify({ ids, action: 'delete' }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Delete failed');
-      toast({ title: 'Success', description: `${selectedIds.length} registrations deleted.` });
-      setSelectedIds([]);
+      toast({ title: 'Success', description: `${ids.length} registrations deleted.` });
+      setSelectedIds((prev) => prev.filter((id) => !ids.includes(id)));
       await loadRegistrations();
       refreshGlobalRegistrations();
     } catch (err: any) {
       toast({ title: 'Error', description: err.message || 'Some deletions failed.', variant: 'destructive' });
+    } finally {
+      setGlobalLoading(false);
+    }
+  };
+
+  const handleBulkNoShow = async (ids: string[]) => {
+    if (ids.length === 0) return;
+    try {
+      setGlobalLoading(true, 'Marking no-show...');
+      const res = await fetch('/api/admin/registrations/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ ids, action: 'noshow' }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Operation failed');
+      toast({ title: 'Success', description: `${ids.length} marked as no-show.` });
+      setSelectedIds((prev) => prev.filter((id) => !ids.includes(id)));
+      await loadRegistrations();
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Some operations failed.', variant: 'destructive' });
     } finally {
       setGlobalLoading(false);
     }
@@ -240,20 +313,20 @@ export default function RegistrationsPage() {
     }
   };
 
-  const handleBulkAttend = async () => {
-    if (!confirm(`Mark ${selectedIds.length} registrations as attended?`)) return;
+  const handleBulkAttend = async (ids: string[]) => {
+    if (ids.length === 0) return;
     try {
       setGlobalLoading(true, 'Marking as attended...');
       const res = await fetch('/api/admin/registrations/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ ids: selectedIds, action: 'attend' }),
+        body: JSON.stringify({ ids, action: 'attend' }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Mark as attended failed');
-      toast({ title: 'Success', description: `${selectedIds.length} registrations marked as attended.` });
-      setSelectedIds([]);
+      toast({ title: 'Success', description: `${ids.length} registrations marked as attended.` });
+      setSelectedIds((prev) => prev.filter((id) => !ids.includes(id)));
       await loadRegistrations();
     } catch (err: any) {
       toast({ title: 'Error', description: err.message || 'Some operations failed.', variant: 'destructive' });
@@ -261,23 +334,6 @@ export default function RegistrationsPage() {
       setGlobalLoading(false);
     }
   };
-
-  // Determine bulk action buttons based on selected registrations' status
-  const getSelectedStatuses = () => {
-    const statuses = new Set(selectedIds.map(id => {
-      const reg = registrations.find(r => r.id === id);
-      return reg?.status;
-    }).filter(Boolean));
-    return statuses as Set<string>;
-  };
-
-  const selectedStatuses = getSelectedStatuses();
-  const isAllPending = selectedStatuses.size === 1 && selectedStatuses.has('pending');
-  const isAllConfirmed = selectedStatuses.size === 1 && selectedStatuses.has('confirmed');
-  const hasOnlyPendingConfirmedOrAttended =
-    (selectedStatuses.size === 1 &&
-      (selectedStatuses.has('pending') || selectedStatuses.has('confirmed') || selectedStatuses.has('attended'))) ||
-    selectedStatuses.size === 0;
 
   const handleExport = () => {
     const exportData = filtered.map(r => {
@@ -301,11 +357,12 @@ export default function RegistrationsPage() {
 
   const statusMap: Record<string, { label: string; class: string }> = {
     pending: { label: 'Pending', class: 'bg-yellow-100 text-yellow-700' },
-    confirmed: { label: 'Confirmed', class: 'bg-green-100 text-green-700' },
+    confirmed: { label: 'Approved', class: 'bg-green-100 text-green-700' },
     attended: { label: 'Attended', class: 'bg-blue-100 text-blue-700' },
     cancelled: { label: 'Cancelled', class: 'bg-red-100 text-red-700' },
     waitlisted: { label: 'Waitlisted', class: 'bg-orange-100 text-orange-700' },
-    'no-show': { label: 'No-Show', class: 'bg-slate-100 text-slate-700' },
+    'no-show': { label: 'No Show', class: 'bg-slate-100 text-slate-700' },
+    rejected: { label: 'Rejected', class: 'bg-rose-100 text-rose-700' },
   };
 
   return (
@@ -340,30 +397,26 @@ export default function RegistrationsPage() {
                   {selectedIds.length} selected
                 </p>
                 <div className="flex items-center gap-2">
-                  {isAllPending && (
-                    <>
-                      <Button size="sm" onClick={handleBulkApprove} className="bg-green-600 hover:bg-green-700">
-                        <Check className="mr-1.5 h-4 w-4" />
-                        Approve
-                      </Button>
-                      <Button size="sm" onClick={handleBulkReject} className="bg-orange-600 hover:bg-orange-700">
-                        <X className="mr-1.5 h-4 w-4" />
-                        Reject
-                      </Button>
-                    </>
-                  )}
-                  {isAllConfirmed && (
-                    <Button size="sm" onClick={handleBulkAttend} className="bg-blue-600 hover:bg-blue-700">
-                      <UserCheck className="mr-1.5 h-4 w-4" />
-                      Mark Attended
-                    </Button>
-                  )}
-                  {hasOnlyPendingConfirmedOrAttended && (
-                    <Button size="sm" variant="destructive" onClick={handleBulkDelete}>
-                      <Trash2 className="mr-1.5 h-4 w-4" />
-                      Delete
-                    </Button>
-                  )}
+                  <Button size="sm" onClick={() => prepareAction('approve')} className="bg-green-600 hover:bg-green-700">
+                    <Check className="mr-1.5 h-4 w-4" />
+                    Approve
+                  </Button>
+                  <Button size="sm" onClick={() => prepareAction('reject')} className="bg-orange-600 hover:bg-orange-700">
+                    <X className="mr-1.5 h-4 w-4" />
+                    Reject
+                  </Button>
+                  <Button size="sm" onClick={() => prepareAction('attend')} className="bg-blue-600 hover:bg-blue-700">
+                    <UserCheck className="mr-1.5 h-4 w-4" />
+                    Mark Attended
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => prepareAction('noshow')} className="text-red-600 border-red-200 hover:bg-red-50">
+                    <XCircle className="mr-1.5 h-4 w-4" />
+                    Mark No-Show
+                  </Button>
+                  <Button size="sm" variant="destructive" onClick={() => prepareAction('delete')}>
+                    <Trash2 className="mr-1.5 h-4 w-4" />
+                    Delete
+                  </Button>
                 </div>
               </div>
             </div>
@@ -393,7 +446,7 @@ export default function RegistrationsPage() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {paginatedData.map((reg) => {
-                    const status = statusMap[reg.status] || { label: reg.status, class: 'bg-gray-100' };
+                    const status = statusMap[reg.status] || { label: reg.statusLabel || reg.status, class: 'bg-gray-100' };
 
                     return (
                       <tr key={reg.id} className="hover:bg-muted/30 transition-colors">
@@ -415,7 +468,7 @@ export default function RegistrationsPage() {
                         </td>
                         <td className="px-6 py-4">
                           <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${status.class}`}>
-                            {status.label}
+                            {reg.statusLabel || status.label}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-sm text-muted-foreground">
@@ -442,14 +495,27 @@ export default function RegistrationsPage() {
                                 >
                                   <Check className="w-4 h-4" />
                                 </Button>
-                                <Button
+                              <Button
                                   size="sm"
                                   variant="ghost"
                                   className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                  onClick={() => prepareAction('reject', [reg.id])}
+                                >
+                                  <X className="w-4 h-4" />
+                                </Button>
+                              </>
+                            )}
+                            {reg.status === 'confirmed' && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700"
+                                  title="Mark Attended"
                                   onClick={async () => {
-                                    setGlobalLoading(true, 'Rejecting registration...');
+                                    setGlobalLoading(true, 'Marking as attended...');
                                     try {
-                                      await rejectRegistration(reg.id);
+                                      await markAttended(reg.id);
                                       await loadRegistrations();
                                       refreshGlobalRegistrations();
                                     } finally {
@@ -457,29 +523,41 @@ export default function RegistrationsPage() {
                                     }
                                   }}
                                 >
-                                  <X className="w-4 h-4" />
+                                  <UserCheck className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                                  title="Mark No-Show"
+                                  onClick={async () => {
+                                    setGlobalLoading(true, 'Marking no-show...');
+                                    try {
+                                      const res = await fetch(`/api/admin/registrations/${reg.id}`, {
+                                        method: 'PATCH',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        credentials: 'include',
+                                        body: JSON.stringify({ status: 'no-show', reason: rejectReason || 'Did not attend' }),
+                                      });
+                                      const data = await res.json();
+                                      if (!res.ok) throw new Error(data.error || 'Failed to update');
+                                      toast({
+                                        title: 'Success',
+                                        description: `${reg.userName || 'Attendee'} marked as no-show.`,
+                                        className: 'bg-green-50 text-green-900 border border-green-200',
+                                      });
+                                      await loadRegistrations();
+                                      refreshGlobalRegistrations();
+                                    } catch (err: any) {
+                                      toast({ title: 'Error', description: err.message || 'Failed to update.', variant: 'destructive' });
+                                    } finally {
+                                      setGlobalLoading(false);
+                                    }
+                                  }}
+                                >
+                                  <XCircle className="w-4 h-4" />
                                 </Button>
                               </>
-                            )}
-                            {reg.status === 'confirmed' && (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700"
-                                title="Mark Attended"
-                                onClick={async () => {
-                                  setGlobalLoading(true, 'Marking as attended...');
-                                  try {
-                                    await markAttended(reg.id);
-                                    await loadRegistrations();
-                                    refreshGlobalRegistrations();
-                                  } finally {
-                                    setGlobalLoading(false);
-                                  }
-                                }}
-                              >
-                                <UserCheck className="w-4 h-4" />
-                              </Button>
                             )}
                             <Button
                               size="sm"
@@ -551,6 +629,60 @@ export default function RegistrationsPage() {
               </div>
             </DialogContent>
           </Dialog>
+
+          <Dialog open={actionDialogOpen} onOpenChange={(open) => { if (!rejectSubmitting) setActionDialogOpen(open); }}>
+            <DialogContent className="max-w-md bg-card border-border">
+              <DialogHeader>
+                <DialogTitle>
+                  {actionType ? `Bulk ${actionType === 'noshow' ? 'Mark No Show' : actionType === 'attend' ? 'Mark Attended' : actionType === 'delete' ? 'Delete' : actionType === 'approve' ? 'Approve' : 'Reject'}` : 'Bulk Action'}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-2 text-sm text-foreground">
+                <div className="rounded-md border border-border bg-muted/30 p-3 space-y-1">
+                  <p className="font-medium text-foreground">Selection summary</p>
+                  <p>{eligibleIds.length} eligible | {skippedIds.length} skipped (status not applicable)</p>
+                  <p className="text-muted-foreground">Only eligible items will be processed; others remain unchanged.</p>
+                </div>
+                {actionType === 'reject' && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">Reason (optional)</label>
+                    <Textarea
+                      value={rejectReason}
+                      onChange={(e) => setRejectReason(e.target.value)}
+                      placeholder="e.g., Event is full or duplicate registration."
+                      maxLength={500}
+                      rows={4}
+                    />
+                    <p className="text-xs text-muted-foreground text-right">{rejectReason.length}/500</p>
+                  </div>
+                )}
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="ghost" onClick={() => setActionDialogOpen(false)} disabled={rejectSubmitting}>
+                    Cancel
+                  </Button>
+                  <Button
+                    type="button"
+                    disabled={rejectSubmitting || eligibleIds.length === 0}
+                    onClick={async () => {
+                      if (!actionType) return;
+                      if (actionType === 'approve') await handleBulkApprove(eligibleIds);
+                      if (actionType === 'reject') await handleSubmitReject(eligibleIds);
+                      if (actionType === 'attend') await handleBulkAttend(eligibleIds);
+                      if (actionType === 'noshow') await handleBulkNoShow(eligibleIds);
+                      if (actionType === 'delete') await handleBulkDelete(eligibleIds);
+                      setActionDialogOpen(false);
+                      // leave skipped selected to allow further actions
+                      setSelectedIds((prev) => prev.filter((id) => skippedIds.includes(id)));
+                    }}
+                  >
+                    {rejectSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {eligibleIds.length === 0 ? 'Nothing to process' : `Proceed (${eligibleIds.length})`}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
           <DataPagination
             currentPage={safePage}
             totalPages={totalPages}

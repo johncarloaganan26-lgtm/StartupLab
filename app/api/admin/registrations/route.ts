@@ -35,11 +35,22 @@ export async function GET() {
        ORDER BY r.registered_at DESC`
     )
 
+    const labelMap: Record<string, string> = {
+      pending: 'Pending',
+      confirmed: 'Approved',
+      attended: 'Attended',
+      cancelled: 'Cancelled',
+      waitlisted: 'Waitlisted',
+      'no-show': 'No Show',
+      rejected: 'Rejected',
+    }
+
     const registrations = (rows as any[]).map((row) => ({
       id: String(row.id),
       eventId: String(row.event_id),
       userId: String(row.user_id),
       status: row.status,
+      statusLabel: labelMap[row.status] || row.status,
       registeredAt: row.registered_at,
       userName: row.user_name,
       userEmail: row.user_email,

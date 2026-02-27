@@ -8,6 +8,16 @@ import { createNotification, createNotificationForAdmin } from '@/lib/notificati
 
 export const runtime = 'nodejs'
 
+async function ensureStatusEnum(conn: any) {
+  try {
+    await conn.execute(
+      "ALTER TABLE registrations MODIFY COLUMN status ENUM('pending','confirmed','attended','cancelled','waitlisted','no-show','rejected') NOT NULL DEFAULT 'pending'"
+    )
+  } catch (err: any) {
+    // Ignore if already set or lacking privilege
+  }
+}
+
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -20,14 +30,18 @@ export async function PATCH(
   if (payload.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const body = await req.json()
-  const allowedStatuses = ['pending', 'confirmed', 'attended', 'cancelled', 'waitlisted', 'no-show']
-  if (!body.status || !allowedStatuses.includes(body.status)) {
+  const requestStatus: string = body.status
+  const reason = typeof body.reason === 'string' ? body.reason.trim().slice(0, 500) : ''
+  const allowedStatuses = ['pending', 'confirmed', 'attended', 'cancelled', 'waitlisted', 'no-show', 'rejected']
+  if (!requestStatus || !allowedStatuses.includes(requestStatus)) {
     return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
   }
+  const newStatus = requestStatus
 
   const conn = await getDb().getConnection()
   try {
     await conn.beginTransaction()
+    await ensureStatusEnum(conn)
 
     // 1. Get current status and event info
     const [infoRows] = await conn.execute(
@@ -53,7 +67,6 @@ export async function PATCH(
     if (!info) throw new Error('Registration not found')
 
     const prevStatus = info.previous_status
-    const newStatus = body.status
     const eventId = info.event_id
 
     // 2. Handle available_slots logic
@@ -88,6 +101,7 @@ export async function PATCH(
         userEmail: String(info.user_email),
         eventId: String(eventId),
         eventTitle: String(info.event_title),
+        reason: reason || undefined,
       },
     })
 
@@ -129,6 +143,9 @@ export async function PATCH(
     // Create in-app notifications
     const userId = String(info.user_id)
     
+    const displayStatus = requestStatus === 'no-show' ? 'no-show' : newStatus
+    const reasonSuffix = reason ? ` Reason: ${reason}` : ''
+
     if (newStatus === 'confirmed') {
       await createNotification({
         userId,
@@ -142,16 +159,16 @@ export async function PATCH(
         message: `${userName}'s registration for "${eventTitle}" has been approved.`,
         type: 'registration_approved'
       })
-    } else if (newStatus === 'cancelled' || newStatus === 'no-show') {
+    } else if (displayStatus === 'cancelled' || displayStatus === 'no-show') {
       await createNotification({
         userId,
         title: 'Registration Rejected',
-        message: `Your registration for "${eventTitle}" has been ${newStatus === 'cancelled' ? 'cancelled' : 'marked as no-show'}.`,
+        message: `Your registration for "${eventTitle}" has been ${displayStatus === 'no-show' ? 'marked as no-show' : 'cancelled'}.${reasonSuffix}`,
         type: 'registration_rejected'
       })
       await createNotificationForAdmin({
         title: 'Registration Rejected',
-        message: `${userName}'s registration for "${eventTitle}" has been ${newStatus === 'cancelled' ? 'cancelled' : 'marked as no-show'}.`,
+        message: `${userName}'s registration for "${eventTitle}" has been ${displayStatus === 'no-show' ? 'marked as no-show' : 'cancelled'}.${reasonSuffix}`,
         type: 'registration_rejected'
       })
     } else if (newStatus === 'attended') {

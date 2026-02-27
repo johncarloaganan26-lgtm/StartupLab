@@ -28,6 +28,7 @@ export function EventCard({
   const isLearnMore = actionLabel === 'Learn More';
   const registrations = Math.max(0, event.totalSlots - event.availableSlots);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const isCompleted = event.status === 'completed';
 
   const { visibleDescription, isLongDescription } = useMemo(() => {
     const text = String(event.description ?? '').trim();
@@ -111,9 +112,13 @@ export function EventCard({
             <Button
               onClick={onRegister}
               className="w-full"
-              disabled={event.availableSlots === 0 || disabled}
+              disabled={isCompleted || event.availableSlots === 0 || disabled}
             >
-              {event.availableSlots === 0 ? 'Fully Booked' : actionLabel}
+              {isCompleted
+                ? 'Event Completed'
+                : event.availableSlots === 0
+                  ? 'Fully Booked'
+                  : actionLabel}
             </Button>
           ) : onEdit ? (
             <Button

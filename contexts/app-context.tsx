@@ -66,7 +66,7 @@ interface AppContextType {
   updateEvent: (id: string, updates: Partial<Event>) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
   approveRegistration: (registrationId: string) => Promise<void>;
-  rejectRegistration: (registrationId: string) => Promise<void>;
+  rejectRegistration: (registrationId: string, reason?: string) => Promise<void>;
   markAttended: (registrationId: string) => Promise<void>;
   fetchEvents: () => Promise<void>;
   fetchRegistrations: () => Promise<void>;
@@ -380,10 +380,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     await fetchRegistrations();
   }, [apiRequest, fetchRegistrations]);
 
-  const rejectRegistration = useCallback(async (registrationId: string) => {
+  const rejectRegistration = useCallback(async (registrationId: string, reason?: string) => {
     await apiRequest(`/api/admin/registrations/${registrationId}`, {
       method: 'PATCH',
-      body: JSON.stringify({ status: 'cancelled' }),
+      body: JSON.stringify({ status: 'rejected', reason }),
     }, {
       successTitle: 'Updated',
       successDescription: 'Registration rejected',

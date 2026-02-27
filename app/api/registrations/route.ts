@@ -8,19 +8,35 @@ import { createNotification, createNotificationForAdmin } from '@/lib/notificati
 
 export const runtime = 'nodejs'
 
+async function withRetry<T>(fn: () => Promise<T>, attempts = 3, delayMs = 150): Promise<T> {
+  let lastErr: any;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+      if (i === attempts - 1) break;
+      await new Promise((r) => setTimeout(r, delayMs));
+    }
+  }
+  throw lastErr;
+}
+
 export async function GET() {
   const cookieStore = await cookies()
   const token = cookieStore.get(authCookieName)?.value
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const payload = await verifyAuthToken(token)
-  const [rows] = await getDb().execute(
-    `SELECT r.id, r.event_id, r.status, r.registered_at, e.title, e.date, e.time, e.location
-     FROM registrations r
-     JOIN events e ON e.id = r.event_id
-     WHERE r.user_id = ?
-     ORDER BY r.registered_at DESC`,
-    [payload.sub]
+  const [rows] = await withRetry(() =>
+    getDb().execute(
+      `SELECT r.id, r.event_id, r.status, r.registered_at, e.title, e.date, e.time, e.location
+       FROM registrations r
+       JOIN events e ON e.id = r.event_id
+       WHERE r.user_id = ?
+       ORDER BY r.registered_at DESC`,
+      [payload.sub]
+    )
   )
 
   const registrations = (rows as any[]).map((row) => ({
@@ -47,9 +63,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'eventId is required.' }, { status: 400 })
     }
 
-    const [existing] = await getDb().execute(
-      'SELECT id, status FROM registrations WHERE event_id = ? AND user_id = ? LIMIT 1',
-      [eventId, payload.sub]
+    const [existing] = await withRetry(() =>
+      getDb().execute(
+        'SELECT id, status FROM registrations WHERE event_id = ? AND user_id = ? LIMIT 1',
+        [eventId, payload.sub]
+      )
     )
     if ((existing as any[]).length > 0) {
       const row = (existing as any[])[0]
@@ -58,9 +76,11 @@ export async function POST(req: Request) {
       }
     }
 
-    const [eventRows] = await getDb().execute(
-      'SELECT id, title, date, time, location, available_slots FROM events WHERE id = ? LIMIT 1',
-      [eventId]
+    const [eventRows] = await withRetry(() =>
+      getDb().execute(
+        'SELECT id, title, date, time, location, available_slots FROM events WHERE id = ? LIMIT 1',
+        [eventId]
+      )
     )
     if ((eventRows as any[]).length === 0) {
       return NextResponse.json({ error: 'Event not found.' }, { status: 404 })
@@ -107,9 +127,11 @@ export async function POST(req: Request) {
     }
 
     // Get user information for email
-    const [userRows] = await getDb().execute(
-      'SELECT name, email FROM users WHERE id = ? LIMIT 1',
-      [payload.sub]
+    const [userRows] = await withRetry(() =>
+      getDb().execute(
+        'SELECT name, email FROM users WHERE id = ? LIMIT 1',
+        [payload.sub]
+      )
     )
     
     const user = (userRows as any[])[0]
