@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AdminLayout } from '@/components/admin-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AuthGuard } from '@/components/auth-guard';
@@ -233,33 +233,11 @@ export default function AdminReportsPage() {
             </table>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:hidden">
-            <MetricCard
-              title="Total Events"
-              value={report?.totalEvents ?? events.length}
-              subtitle="Last 12 months"
-              icon={<Calendar className="w-5 h-5 text-primary" />}
-              trend={eventsMoMGrowth}
-            />
-            <MetricCard
-              title="Total Registrations"
-              value={report?.totalRegistrations ?? registrations.length}
-              subtitle="vs last month"
-              icon={<Ticket className="w-5 h-5 text-primary" />}
-              trend={registrationMoMGrowth}
-            />
-            <MetricCard
-              title="Avg / Event"
-              value={avgRegistrationsPerEvent}
-              subtitle="registrations per event"
-              icon={<Users className="w-5 h-5 text-primary" />}
-            />
-            <MetricCard
-              title="Capacity Usage"
-              value={`${capacityUsage}%`}
-              subtitle="filled seats"
-              icon={<BarChart3 className="w-5 h-5 text-primary" />}
-            />
+          <div className="flex flex-wrap gap-2 print:hidden">
+            <StatPill label="Total Events" value={report?.totalEvents ?? events.length} delta={eventsMoMGrowth} icon={<Calendar className="w-4 h-4" />} />
+            <StatPill label="Total Registrations" value={report?.totalRegistrations ?? registrations.length} delta={registrationMoMGrowth} icon={<Ticket className="w-4 h-4" />} />
+            <StatPill label="Avg / Event" value={avgRegistrationsPerEvent} icon={<Users className="w-4 h-4" />} />
+            <StatPill label="Capacity Usage" value={`${capacityUsage}%`} icon={<BarChart3 className="w-4 h-4" />} />
           </div>
 
           {error && (
@@ -377,35 +355,36 @@ export default function AdminReportsPage() {
   );
 }
 
-type MetricCardProps = {
-  title: string;
+function StatPill({
+  label,
+  value,
+  icon,
+  delta,
+}: {
+  label: string;
   value: number | string;
-  subtitle: string;
-  icon: ReactNode;
-  trend?: number | null;
-};
-
-function MetricCard({ title, value, subtitle, icon, trend }: MetricCardProps) {
-  const trendLabel =
-    typeof trend === 'number'
-      ? `${trend >= 0 ? '+' : ''}${trend}% vs last month`
-      : subtitle;
-  const trendClass = trend !== null && trend !== undefined
-    ? trend >= 0
-      ? 'text-green-600'
-      : 'text-amber-600'
-    : 'text-muted-foreground';
+  icon: React.ReactNode;
+  delta?: number | null;
+}) {
+  const showDelta = typeof delta === 'number';
+  const deltaClass =
+    showDelta && delta !== null
+      ? delta >= 0
+        ? 'text-green-600'
+        : 'text-amber-600'
+      : 'text-muted-foreground';
 
   return (
-    <Card className="border-border shadow-sm">
-      <CardContent className="p-4 flex items-center justify-between">
-        <div>
-          <p className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide">{title}</p>
-          <p className="text-3xl font-bold mt-1">{value}</p>
-          <p className={`text-xs mt-1 ${trendClass}`}>{trendLabel}</p>
-        </div>
-        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">{icon}</div>
-      </CardContent>
-    </Card>
+    <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm shadow-sm">
+      <span className="text-primary">{icon}</span>
+      <span className="font-semibold text-foreground">{value}</span>
+      <span className="text-xs text-muted-foreground">{label}</span>
+      {showDelta && (
+        <span className={`text-xs font-semibold ${deltaClass}`}>
+          {delta! >= 0 ? '+' : ''}
+          {delta}%
+        </span>
+      )}
+    </div>
   );
 }
