@@ -143,7 +143,7 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
         </Link>
       </div>
 
-      <nav className="flex-1 pt-3 pb-1 space-y-4 overflow-y-auto overflow-x-hidden scrollbar-hide">
+      <nav className="flex-1 pt-3 pb-3 px-3 space-y-4 overflow-y-auto overflow-x-hidden scrollbar-hide">
         {navigation.map((section) => (
           <div key={section.group} className="space-y-1">
             {!isCollapsed && (
@@ -154,7 +154,7 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
                 </div>
               </div>
             )}
-            <div className={`${!isCollapsed ? 'ml-9 mr-2 space-y-1' : 'space-y-1'}`}>
+            <div className="space-y-1">
               {section.items.map((item) => {
                 const iconName = (item as any).iconName;
                 const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href + '/'));
@@ -162,7 +162,7 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
                 return (
                   <Link key={item.href} href={item.href} className="block group">
                     <div
-                      className={`flex items-center min-h-12 rounded-lg ${isCollapsed ? 'justify-center p-3 mx-2 my-1' : 'px-3 py-3'} gap-3 transition-colors ${isActive
+                      className={`flex items-center min-h-12 rounded-lg w-full ${isCollapsed ? 'justify-center p-3 mx-2 my-1' : 'px-4 py-3'} gap-3 transition-colors ${isActive
                         ? 'bg-slate-200 dark:bg-slate-800 text-[#1f2937] dark:text-white'
                         : 'text-[#3A3A3A] dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900'
                         }`}
