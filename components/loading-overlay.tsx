@@ -2,7 +2,6 @@
 
 import { useLoading } from '@/contexts/loading-context';
 import { Loader2 } from 'lucide-react';
-
 export function LoadingOverlay() {
   const { isLoading, loadingMessage } = useLoading();
 
@@ -10,14 +9,22 @@ export function LoadingOverlay() {
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="flex flex-col items-center gap-4 p-8 bg-card border border-border rounded-lg shadow-xl">
-        <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        {loadingMessage && (
-          <p className="text-sm font-medium text-foreground animate-pulse">
-            {loadingMessage}
-          </p>
-        )}
-      </div>
+      <img
+        src="/Dark-e1735336357773.png"
+        alt="StartupLab"
+        className="w-44 h-auto object-contain"
+        style={{ animation: 'shake 0.8s ease-in-out infinite' }}
+      />
+      <style>{`
+        @keyframes shake {
+          0% { transform: translate(0, 0) rotate(0deg); }
+          20% { transform: translate(-2px, 0) rotate(-2deg); }
+          40% { transform: translate(2px, 0) rotate(2deg); }
+          60% { transform: translate(-2px, 0) rotate(-2deg); }
+          80% { transform: translate(2px, 0) rotate(2deg); }
+          100% { transform: translate(0, 0) rotate(0deg); }
+        }
+      `}</style>
     </div>
   );
 }
