@@ -145,11 +145,31 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            <StatPill label="My Events" value={userRegistrations.length} icon={<CalendarIcon className="w-4 h-4" />} />
-            <StatPill label="Upcoming" value={upcomingCount} icon={<Ticket className="w-4 h-4" />} />
-            <StatPill label="Completed" value={attendedCount} icon={<Zap className="w-4 h-4" />} />
-            <StatPill label="Pending" value={pendingCount} icon={<Clock className="w-4 h-4" />} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <MetricCard
+              title="My Events"
+              value={userRegistrations.length}
+              subtitle="All-time registrations"
+              icon={<CalendarIcon className="w-5 h-5 text-primary" />}
+            />
+            <MetricCard
+              title="Upcoming"
+              value={upcomingCount}
+              subtitle="Confirmed seats"
+              icon={<Ticket className="w-5 h-5 text-primary" />}
+            />
+            <MetricCard
+              title="Completed"
+              value={attendedCount}
+              subtitle="Sessions attended"
+              icon={<Zap className="w-5 h-5 text-primary" />}
+            />
+            <MetricCard
+              title="Pending"
+              value={pendingCount}
+              subtitle="Awaiting approval"
+              icon={<Clock className="w-5 h-5 text-primary" />}
+            />
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -171,43 +191,43 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-4">
-            <Card className="lg:col-span-2 border-border">
+            <Card className="border-border">
               <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <CardTitle>Event Calendar</CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    Pick a date to see events. Dates with dots have scheduled sessions.
+                    Dates with dots have scheduled sessions.
                   </p>
                 </div>
                 <Button variant="outline" size="sm" asChild>
                   <Link href="/dashboard/events" className="gap-2 flex items-center">
                     <ListChecks className="w-4 h-4" />
-                    View all events
+                    View all
                   </Link>
                 </Button>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="rounded-md border border-border p-3 bg-muted/30">
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={(day) => day && setSelectedDate(day)}
-                    modifiers={{ event: eventDates }}
-                    modifiersClassNames={{
-                      event: 'after:content-[""] after:w-1.5 after:h-1.5 after:bg-primary after:rounded-full after:block after:mx-auto after:mt-1',
-                    }}
-                  />
-                </div>
+              <CardContent>
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(day) => day && setSelectedDate(day)}
+                  modifiers={{ event: eventDates }}
+                  modifiersClassNames={{
+                    event: 'after:content-[""] after:w-1.5 after:h-1.5 after:bg-primary after:rounded-full after:block after:mx-auto after:mt-1',
+                  }}
+                />
+              </CardContent>
+            </Card>
 
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-foreground">
-                      {selectedDate ? formatPHDate(selectedDate) : 'Select a date'}
-                    </h3>
-                    <span className="text-xs text-muted-foreground">
-                      {selectedDayEvents.length} {selectedDayEvents.length === 1 ? 'event' : 'events'}
-                    </span>
-                  </div>
+            <div className="space-y-4 lg:col-span-2">
+              <Card className="border-border">
+                <CardHeader className="flex items-center justify-between">
+                  <CardTitle>{selectedDate ? formatPHDate(selectedDate) : 'Select a date'}</CardTitle>
+                  <span className="text-xs text-muted-foreground">
+                    {selectedDayEvents.length} {selectedDayEvents.length === 1 ? 'event' : 'events'}
+                  </span>
+                </CardHeader>
+                <CardContent>
                   {selectedDayEvents.length > 0 ? (
                     <div className="space-y-3">
                       {selectedDayEvents.map((ev) => (
@@ -237,85 +257,85 @@ export default function DashboardPage() {
                       No events scheduled for this date.
                     </div>
                   )}
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="space-y-4">
-              <Card className="border-border">
-                <CardHeader>
-                  <CardTitle>Upcoming Highlights</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {upcomingEvents.length > 0 ? (
-                    upcomingEvents.map((ev) => (
-                      <div
-                        key={ev.id}
-                        className="border border-border rounded-md p-3 hover:border-primary/50 transition-colors"
-                      >
-                        <p className="text-sm font-semibold text-foreground leading-tight">{ev.title}</p>
-                        <p className="text-xs text-muted-foreground flex items-center gap-2 mt-1">
-                          <CalendarIcon className="w-4 h-4" />
-                          {formatPHDate(ev.dateObj)}
-                        </p>
-                        <p className="text-xs text-muted-foreground flex items-center gap-2">
-                          <Clock className="w-4 h-4" />
-                          {ev.time ? formatTime12h(ev.time) : 'Time TBA'}
-                        </p>
-                        <p className="text-xs text-muted-foreground flex items-center gap-2">
-                          <MapPin className="w-4 h-4" />
-                          {ev.location || 'Location TBA'}
-                        </p>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No upcoming events yet.</p>
-                  )}
                 </CardContent>
               </Card>
 
-              <Card className="border-border">
-                <CardHeader className="flex items-center justify-between">
-                  <CardTitle>Recent Activity</CardTitle>
-                  <Link href="/dashboard/audit-logs" className="text-xs font-semibold text-primary hover:underline">
-                    View all
-                  </Link>
-                </CardHeader>
-                <CardContent className="space-y-3 max-h-[360px] overflow-auto">
-                  {recentActivity.length > 0 ? (
-                    recentActivity.map((activity) => {
-                      const toneClass =
-                        activity.tone === 'success'
-                          ? 'text-green-600'
-                          : activity.tone === 'warning'
-                            ? 'text-amber-600'
-                            : activity.tone === 'danger'
-                              ? 'text-red-600'
-                              : activity.tone === 'info'
-                                ? 'text-blue-600'
-                                : 'text-muted-foreground';
-
-                      return (
-                        <div key={activity.id} className="border border-border rounded-md p-3 space-y-1">
-                          <div className="flex items-center justify-between gap-2">
-                            <p className="text-sm font-semibold text-foreground leading-tight">{activity.summary}</p>
-                            <span className="text-[10px] uppercase px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border">
-                              {activity.action}
-                            </span>
-                          </div>
-                          <p className={`text-xs flex items-center gap-2 ${toneClass}`}>
-                            <Activity className="w-3.5 h-3.5" />
-                            {activity.target}
+              <div className="grid lg:grid-cols-2 gap-4">
+                <Card className="border-border">
+                  <CardHeader>
+                    <CardTitle>Upcoming Highlights</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {upcomingEvents.length > 0 ? (
+                      upcomingEvents.map((ev) => (
+                        <div
+                          key={ev.id}
+                          className="border border-border rounded-md p-3 hover:border-primary/50 transition-colors"
+                        >
+                          <p className="text-sm font-semibold text-foreground leading-tight">{ev.title}</p>
+                          <p className="text-xs text-muted-foreground flex items-center gap-2 mt-1">
+                            <CalendarIcon className="w-4 h-4" />
+                            {formatPHDate(ev.dateObj)}
                           </p>
-                          <p className="text-[11px] text-muted-foreground">{formatPHDateTime(activity.createdAt)}</p>
+                          <p className="text-xs text-muted-foreground flex items-center gap-2">
+                            <Clock className="w-4 h-4" />
+                            {ev.time ? formatTime12h(ev.time) : 'Time TBA'}
+                          </p>
+                          <p className="text-xs text-muted-foreground flex items-center gap-2">
+                            <MapPin className="w-4 h-4" />
+                            {ev.location || 'Location TBA'}
+                          </p>
                         </div>
-                      );
-                    })
-                  ) : (
-                    <div className="text-sm text-muted-foreground text-center py-4">No activity yet.</div>
-                  )}
-                </CardContent>
-              </Card>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No upcoming events yet.</p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border">
+                  <CardHeader className="flex items-center justify-between">
+                    <CardTitle>Recent Activity</CardTitle>
+                    <Link href="/dashboard/audit-logs" className="text-xs font-semibold text-primary hover:underline">
+                      View all
+                    </Link>
+                  </CardHeader>
+                  <CardContent className="space-y-3 max-h-[360px] overflow-auto">
+                    {recentActivity.length > 0 ? (
+                      recentActivity.map((activity) => {
+                        const toneClass =
+                          activity.tone === 'success'
+                            ? 'text-green-600'
+                            : activity.tone === 'warning'
+                              ? 'text-amber-600'
+                              : activity.tone === 'danger'
+                                ? 'text-red-600'
+                                : activity.tone === 'info'
+                                  ? 'text-blue-600'
+                                  : 'text-muted-foreground';
+
+                        return (
+                          <div key={activity.id} className="border border-border rounded-md p-3 space-y-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="text-sm font-semibold text-foreground leading-tight">{activity.summary}</p>
+                              <span className="text-[10px] uppercase px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border">
+                                {activity.action}
+                              </span>
+                            </div>
+                            <p className={`text-xs flex items-center gap-2 ${toneClass}`}>
+                              <Activity className="w-3.5 h-3.5" />
+                              {activity.target}
+                            </p>
+                            <p className="text-[11px] text-muted-foreground">{formatPHDateTime(activity.createdAt)}</p>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="text-sm text-muted-foreground text-center py-4">No activity yet.</div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
         </div>
@@ -324,12 +344,17 @@ export default function DashboardPage() {
   );
 }
 
-function StatPill({ label, value, icon }: { label: string; value: number | string; icon: React.ReactNode }) {
+function MetricCard({ title, value, subtitle, icon }: { title: string; value: number | string; subtitle: string; icon: React.ReactNode }) {
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm shadow-sm">
-      <span className="text-primary">{icon}</span>
-      <span className="font-semibold text-foreground">{value}</span>
-      <span className="text-xs text-muted-foreground">{label}</span>
-    </div>
+    <Card className="border-border shadow-sm">
+      <CardContent className="p-4 flex items-center justify-between">
+        <div>
+          <p className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide">{title}</p>
+          <p className="text-3xl font-bold mt-1">{value}</p>
+          <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
+        </div>
+        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">{icon}</div>
+      </CardContent>
+    </Card>
   );
 }
