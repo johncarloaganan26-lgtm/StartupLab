@@ -12,7 +12,7 @@ const _inter = Inter({ subsets: ['latin'] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'StartupLab - Event Registration',
+  title: 'StartupLab Event Registration',
   description: 'Innovate. Connect. Build. Join exclusive startup events and workshops.',
   generator: 'v0.app',
   icons: {
