@@ -1,7 +1,8 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DashboardLayout } from '@/components/dashboard-layout';
 import { AuthGuard } from '@/components/auth-guard';
 import { useApp } from '@/contexts/app-context';
@@ -144,31 +145,11 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <MetricCard
-              title="My Events"
-              value={userRegistrations.length}
-              subtitle="All-time registrations"
-              icon={<CalendarIcon className="w-5 h-5 text-primary" />}
-            />
-            <MetricCard
-              title="Upcoming"
-              value={upcomingCount}
-              subtitle="Confirmed seats"
-              icon={<Ticket className="w-5 h-5 text-primary" />}
-            />
-            <MetricCard
-              title="Completed"
-              value={attendedCount}
-              subtitle="Sessions attended"
-              icon={<Zap className="w-5 h-5 text-primary" />}
-            />
-            <MetricCard
-              title="Pending"
-              value={pendingCount}
-              subtitle="Awaiting approval"
-              icon={<Clock className="w-5 h-5 text-primary" />}
-            />
+          <div className="flex flex-wrap gap-2">
+            <StatPill label="My Events" value={userRegistrations.length} icon={<CalendarIcon className="w-4 h-4" />} />
+            <StatPill label="Upcoming" value={upcomingCount} icon={<Ticket className="w-4 h-4" />} />
+            <StatPill label="Completed" value={attendedCount} icon={<Zap className="w-4 h-4" />} />
+            <StatPill label="Pending" value={pendingCount} icon={<Clock className="w-4 h-4" />} />
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -343,24 +324,12 @@ export default function DashboardPage() {
   );
 }
 
-type MetricCardProps = {
-  title: string;
-  value: number | string;
-  subtitle: string;
-  icon: ReactNode;
-};
-
-function MetricCard({ title, value, subtitle, icon }: MetricCardProps) {
+function StatPill({ label, value, icon }: { label: string; value: number | string; icon: React.ReactNode }) {
   return (
-    <Card className="border-border shadow-sm">
-      <CardContent className="p-4 flex items-center justify-between">
-        <div>
-          <p className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide">{title}</p>
-          <p className="text-3xl font-bold mt-1">{value}</p>
-          <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
-        </div>
-        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">{icon}</div>
-      </CardContent>
-    </Card>
+    <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm shadow-sm">
+      <span className="text-primary">{icon}</span>
+      <span className="font-semibold text-foreground">{value}</span>
+      <span className="text-xs text-muted-foreground">{label}</span>
+    </div>
   );
 }

@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { AdminLayout } from '@/components/admin-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +20,7 @@ import {
   Legend,
 } from 'recharts';
 import { useApp } from '@/contexts/app-context';
-import { Loader2, Printer, FileDown, Calendar, Users, BarChart3, Ticket, Activity, ClipboardList, Plus } from 'lucide-react';
+import { Loader2, Printer, FileDown, Calendar, Users, BarChart3, Ticket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { exportToCSV } from '@/components/data-toolbar';
 
@@ -133,36 +132,6 @@ export default function AdminReportsPage() {
     filled: e.totalSlots - e.availableSlots,
     capacity: e.totalSlots,
   }));
-
-  const quickActions = useMemo(
-    () => [
-      {
-        title: 'Create Event',
-        href: '/admin/events/create',
-        description: 'Schedule a new session',
-        icon: <Plus className="w-5 h-5" />,
-      },
-      {
-        title: 'Manage Users',
-        href: '/admin/users',
-        description: 'Review attendee accounts',
-        icon: <Users className="w-5 h-5" />,
-      },
-      {
-        title: 'Registrations',
-        href: '/admin/registrations',
-        description: 'Approve or mark attendance',
-        icon: <ClipboardList className="w-5 h-5" />,
-      },
-      {
-        title: 'Audit Logs',
-        href: '/admin/audit-logs',
-        description: 'Track admin actions',
-        icon: <Activity className="w-5 h-5" />,
-      },
-    ],
-    []
-  );
 
   const avgRegistrationsPerEvent = report?.totalEvents
     ? Math.round(report.totalRegistrations / report.totalEvents)
@@ -291,24 +260,6 @@ export default function AdminReportsPage() {
               subtitle="filled seats"
               icon={<BarChart3 className="w-5 h-5 text-primary" />}
             />
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 print:hidden">
-            {quickActions.map((action) => (
-              <Link
-                key={action.href}
-                href={action.href}
-                className="group border border-border rounded-md p-4 bg-card shadow-sm hover:border-primary/60 transition-colors flex items-center gap-3"
-              >
-                <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                  {action.icon}
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">{action.title}</p>
-                  <p className="text-xs text-muted-foreground truncate">{action.description}</p>
-                </div>
-              </Link>
-            ))}
           </div>
 
           {error && (
