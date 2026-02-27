@@ -19,6 +19,8 @@ import Image from 'next/image';
 import { Calendar, MapPin, Users, Info } from 'lucide-react';
 import { formatPHDate, formatTime12h } from '@/lib/time';
 import { DataToolbar, DataPagination, usePaginatedData } from '@/components/data-toolbar';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useToast } from '@/hooks/use-toast';
 
 const PAGE_SIZE = 9;
 
@@ -27,6 +29,8 @@ export default function EventsPage() {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [isRegistering, setIsRegistering] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const { toast } = useToast();
 
   // Search & pagination state
   const [search, setSearch] = useState('');
@@ -66,6 +70,10 @@ export default function EventsPage() {
       ? `${descriptionText.slice(0, DESCRIPTION_PREVIEW_CHARS).trimEnd()}...`
       : descriptionText;
 
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  };
+
   const handleRegister = async () => {
     if (!selectedEventId) return;
     if (isCompleted) return;
@@ -97,14 +105,33 @@ export default function EventsPage() {
           </div>
 
           {!eventsLoading && (
-            <DataToolbar
-              searchPlaceholder="Search events by title, location or description..."
-              searchValue={search}
-              onSearchChange={setSearch}
-              onClearAll={() => setSearch('')}
-              totalResults={totalItems}
-              resultLabel="events"
-            />
+            <>
+              <DataToolbar
+                searchPlaceholder="Search events by title, location or description..."
+                searchValue={search}
+                onSearchChange={setSearch}
+                onClearAll={() => setSearch('')}
+                totalResults={totalItems}
+                resultLabel="events"
+              />
+              <div className="flex items-center gap-3 justify-between flex-wrap mt-2">
+                <p className="text-xs text-muted-foreground">
+                  Showing {paginatedData.length} of {totalItems} events
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const idsOnPage = paginatedData.map((e) => e.id);
+                      setSelectedIds((prev) => Array.from(new Set([...prev, ...idsOnPage])));
+                    }}
+                  >
+                    Select All on Page
+                  </Button>
+                </div>
+              </div>
+            </>
           )}
 
           {eventsLoading ? (
@@ -129,6 +156,51 @@ export default function EventsPage() {
             </div>
           ) : (
             <>
+              {selectedIds.length > 0 && (
+                <div className="rounded-lg border border-border bg-card p-3 flex flex-wrap items-center gap-3 justify-between">
+                  <p className="text-sm font-medium text-foreground">{selectedIds.length} selected</p>
+                  <div className="flex gap-2 flex-wrap">
+                    <Button
+                      size="sm"
+                      onClick={async () => {
+                        const selectableIds = selectedIds.filter((id) => {
+                          const ev = events.find((e) => e.id === id);
+                          if (!ev) return false;
+                          if (ev.status !== 'published') return false;
+                          if (isRegisteredForEvent(id)) return false;
+                          return true;
+                        });
+                        if (selectableIds.length === 0) {
+                          toast({ title: 'No eligible events', description: 'Selected events are either completed or already registered.', variant: 'destructive' });
+                          return;
+                        }
+                        setIsRegistering(true);
+                        let success = 0;
+                        for (const id of selectableIds) {
+                          try {
+                            await registerEvent(id);
+                            success++;
+                          } catch (err) {
+                            // errors handled in context toast
+                          }
+                        }
+                        setIsRegistering(false);
+                        setSelectedIds([]);
+                        if (success > 0) {
+                          toast({ title: 'Registered', description: `Registered for ${success} event${success > 1 ? 's' : ''}.` });
+                        }
+                      }}
+                      disabled={isRegistering}
+                    >
+                      {isRegistering ? 'Registering...' : 'Register Selected'}
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])} disabled={isRegistering}>
+                      Clear Selection
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {paginatedData.map((event) => {
                   const isRegistered = isRegisteredForEvent(event.id);
@@ -140,6 +212,9 @@ export default function EventsPage() {
                         onRegister={() => setSelectedEventId(event.id)}
                         actionLabel={isRegistered ? 'Already Registered' : 'View Details'}
                         disabled={isRegistered}
+                        selectable
+                        selected={selectedIds.includes(event.id)}
+                        onToggleSelect={() => toggleSelect(event.id)}
                       />
                     </div>
                   );

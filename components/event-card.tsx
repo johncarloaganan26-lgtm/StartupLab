@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar, Clock, MapPin, Users } from 'lucide-react';
 import { Event } from '@/contexts/app-context';
 import { formatPHDate, formatTime12h } from '@/lib/time';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface EventCardProps {
   event: Event;
@@ -15,6 +16,9 @@ interface EventCardProps {
   actionLabel?: string;
   disabled?: boolean;
   variant?: 'full' | 'compact';
+  selectable?: boolean;
+  selected?: boolean;
+  onToggleSelect?: () => void;
 }
 
 export function EventCard({
@@ -24,6 +28,9 @@ export function EventCard({
   actionLabel = 'Register',
   disabled = false,
   variant = 'full',
+  selectable = false,
+  selected = false,
+  onToggleSelect,
 }: EventCardProps) {
   const isLearnMore = actionLabel === 'Learn More';
   const registrations = Math.max(0, event.totalSlots - event.availableSlots);
@@ -50,6 +57,15 @@ export function EventCard({
           fill
           className="object-cover"
         />
+        {selectable && (
+          <div className="absolute top-3 right-3 z-20">
+            <Checkbox
+              checked={selected}
+              onCheckedChange={() => onToggleSelect?.()}
+              className="size-5 border-2 border-white shadow-md bg-white/90 data-[state=checked]:bg-[#00a8e8] data-[state=checked]:border-[#008fc4]"
+            />
+          </div>
+        )}
         {isLearnMore && onRegister && (
           <button
             type="button"

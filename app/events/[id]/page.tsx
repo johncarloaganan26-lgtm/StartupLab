@@ -60,6 +60,7 @@ export default function PublicEventDetailsPage() {
 
   const canRegister = isAuthenticated && user?.role === 'attendee' && !isAlreadyRegistered;
   const isFullyBooked = !!event && event.availableSlots === 0;
+  const isCompleted = event?.status === 'completed';
   const descriptionText = (event?.description ?? '').trim();
   const DESCRIPTION_PREVIEW_CHARS = 220;
   const isLongDescription = descriptionText.length > DESCRIPTION_PREVIEW_CHARS;
@@ -162,19 +163,21 @@ export default function PublicEventDetailsPage() {
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   onClick={handleRegister}
-                  disabled={isRegistering || isFullyBooked || (isAuthenticated && !canRegister)}
+                  disabled={isRegistering || isFullyBooked || isCompleted || (isAuthenticated && !canRegister)}
                 >
-                  {isRegistering
-                    ? 'Registering...'
-                    : isFullyBooked
-                    ? 'Fully Booked'
-                    : !isAuthenticated
-                    ? 'Create account to join'
-                    : user?.role !== 'attendee'
-                    ? 'Admin account'
-                    : isAlreadyRegistered
-                    ? 'Already Registered'
-                    : 'Register'}
+                  {isCompleted
+                    ? 'Event Completed'
+                    : isRegistering
+                      ? 'Registering...'
+                      : isFullyBooked
+                        ? 'Fully Booked'
+                        : !isAuthenticated
+                          ? 'Create account to join'
+                          : user?.role !== 'attendee'
+                            ? 'Admin account'
+                            : isAlreadyRegistered
+                              ? 'Already Registered'
+                              : 'Register'}
                 </Button>
               </div>
             </div>

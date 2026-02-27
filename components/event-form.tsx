@@ -42,6 +42,19 @@ export function EventForm({ initialData, onSuccess }: EventFormProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
 
+    const normalizeDate = (value?: string | null) => {
+        if (!value) return '';
+        const d = new Date(value);
+        return isNaN(d.getTime()) ? value.slice(0, 10) : d.toISOString().slice(0, 10);
+    };
+
+    const normalizeTime = (value?: string | null) => {
+        if (!value) return '';
+        // If time is stored as "HH:MM:SS", trim to HH:MM
+        if (value.length >= 5) return value.slice(0, 5);
+        return value;
+    };
+
     const {
         register,
         handleSubmit,
@@ -53,8 +66,8 @@ export function EventForm({ initialData, onSuccess }: EventFormProps) {
         defaultValues: initialData ? {
             title: initialData.title,
             description: initialData.description,
-            date: initialData.date,
-            time: initialData.time,
+            date: normalizeDate(initialData.date),
+            time: normalizeTime(initialData.time),
             location: initialData.location,
             totalSlots: initialData.totalSlots,
             image: initialData.image,
