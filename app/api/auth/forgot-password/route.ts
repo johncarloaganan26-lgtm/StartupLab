@@ -22,8 +22,7 @@ export async function POST(req: Request) {
     );
 
     if (rows.length === 0) {
-      // Return success even if email doesn't exist to prevent user enumeration
-      return NextResponse.json({ ok: true });
+      return NextResponse.json({ error: 'Account not found for that email.' }, { status: 404 });
     }
 
     const userId = rows[0].id;
