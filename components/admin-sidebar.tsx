@@ -124,26 +124,26 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
 
   return (
     <div className={`${isCollapsed ? 'w-16' : 'w-[260px] md:w-[300px]'} font-roboto bg-white dark:bg-black border-r border-border dark:border-slate-800 h-screen flex flex-col transition-all duration-300 z-40 relative p-2`}>
-      <div className={`p-2 h-16 flex items-center ${isCollapsed ? 'justify-center' : 'justify-start pl-4'} border-b border-border`}>
+      <div className="p-3 h-20 flex items-center justify-center border-b border-border">
         <Link href="/" className="block">
           {!isCollapsed && (
             <img 
               src={logoSrc} 
               alt="StartupLab" 
-              className="h-auto w-[112px] md:w-[124px] max-w-none object-contain"
+              className="h-[56px] w-[180px] max-w-none object-contain"
             />
           )}
           {isCollapsed && (
             <img 
               src={logoSrc} 
               alt="StartupLab" 
-              className="h-auto w-6 object-contain rounded-lg"
+              className="h-10 w-10 object-contain rounded-lg"
             />
           )}
         </Link>
       </div>
 
-      <nav className="flex-1 pt-3 pb-3 px-3 space-y-4 overflow-y-auto overflow-x-hidden scrollbar-hide">
+      <nav className="flex-1 pt-3 pb-1 space-y-4 overflow-y-auto overflow-x-hidden scrollbar-hide">
         {navigation.map((section) => (
           <div key={section.group} className="space-y-1">
             {!isCollapsed && (
@@ -154,7 +154,7 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
                 </div>
               </div>
             )}
-            <div className="space-y-1">
+            <div className={`${!isCollapsed ? 'ml-9 mr-2 space-y-1' : 'space-y-1'}`}>
               {section.items.map((item) => {
                 const iconName = (item as any).iconName;
                 const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href + '/'));
@@ -162,7 +162,7 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
                 return (
                   <Link key={item.href} href={item.href} className="block group">
                     <div
-                      className={`flex items-center min-h-12 rounded-lg w-full ${isCollapsed ? 'justify-center p-3 mx-2 my-1' : 'px-4 py-3'} gap-3 transition-colors ${isActive
+                      className={`flex items-center min-h-12 rounded-lg ${isCollapsed ? 'justify-center p-3 mx-2 my-1' : 'px-3 py-3'} gap-3 transition-colors ${isActive
                         ? 'bg-slate-200 dark:bg-slate-800 text-[#1f2937] dark:text-white'
                         : 'text-[#3A3A3A] dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900'
                         }`}
