@@ -1,12 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { DashboardLayout } from '@/components/dashboard-layout';
 import { AuthGuard } from '@/components/auth-guard';
 import { useApp } from '@/contexts/app-context';
-import { Calendar, Users, Zap, ArrowRight, Ticket, ScrollText, Clock, Plus } from 'lucide-react';
-import { formatPHDateTime } from '@/lib/time';
+import { Calendar as CalendarIcon, Users, Zap, Ticket, ScrollText, Clock, Plus, MapPin, Activity, ListChecks } from 'lucide-react';
+import { formatPHDate, formatPHDateTime, formatTime12h } from '@/lib/time';
+import { Calendar } from '@/components/ui/calendar';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 type AuditLogRow = {
   id: string;
@@ -22,13 +25,26 @@ type AuditLogRow = {
 };
 
 export default function DashboardPage() {
-  const { user, registrations } = useApp();
-  const userRegistrations = user ? registrations.filter(r => r.userId === user.id) : [];
+  const { user, registrations, events } = useApp();
+  const userRegistrations = useMemo(
+    () => (user ? registrations.filter((r) => r.userId === user.id) : []),
+    [user, registrations]
+  );
   const [recentActivity, setRecentActivity] = useState<AuditLogRow[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
-  const attendedCount = userRegistrations.filter(r => r.status === 'attended').length;
-  const upcomingCount = userRegistrations.filter(r => r.status === 'confirmed').length;
-  const pendingCount = userRegistrations.filter(r => r.status === 'pending').length;
+  const attendedCount = useMemo(
+    () => userRegistrations.filter((r) => r.status === 'attended').length,
+    [userRegistrations]
+  );
+  const upcomingCount = useMemo(
+    () => userRegistrations.filter((r) => r.status === 'confirmed').length,
+    [userRegistrations]
+  );
+  const pendingCount = useMemo(
+    () => userRegistrations.filter((r) => r.status === 'pending').length,
+    [userRegistrations]
+  );
 
   useEffect(() => {
     const fetchRecentActivity = async () => {
@@ -44,81 +60,247 @@ export default function DashboardPage() {
     fetchRecentActivity();
   }, []);
 
+  const eventsByDate = useMemo(() => {
+    const map = new Map<string, typeof events>();
+    events.forEach((ev) => {
+      const key = new Date(ev.date).toDateString();
+      map.set(key, [...(map.get(key) ?? []), ev]);
+    });
+    return map;
+  }, [events]);
+
+  const eventDates = useMemo(
+    () =>
+      Array.from(eventsByDate.keys())
+        .map((k) => new Date(k))
+        .filter((d) => !Number.isNaN(d.getTime())),
+    [eventsByDate]
+  );
+
+  const selectedDayEvents = useMemo(() => {
+    if (!selectedDate) return [];
+    return eventsByDate.get(selectedDate.toDateString()) ?? [];
+  }, [selectedDate, eventsByDate]);
+
+  const today = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
+
+  const upcomingEvents = useMemo(() => {
+    const sorted = events
+      .map((ev) => ({ ...ev, dateObj: new Date(ev.date) }))
+      .filter((ev) => !Number.isNaN(ev.dateObj.getTime()) && ev.dateObj >= today)
+      .sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime());
+    return sorted.slice(0, 5);
+  }, [events, today]);
+
+  const quickActions = useMemo(
+    () => [
+      {
+        title: 'Discover Events',
+        href: '/dashboard/events',
+        description: 'Browse and join upcoming sessions',
+        icon: <Plus className="w-5 h-5" />,
+      },
+      {
+        title: 'My Registrations',
+        href: '/dashboard/registrations',
+        description: 'Manage your confirmed slots',
+        icon: <Ticket className="w-5 h-5" />,
+      },
+      {
+        title: 'Profile & Preferences',
+        href: '/dashboard/profile',
+        description: 'Update contact info and bio',
+        icon: <Users className="w-5 h-5" />,
+      },
+      {
+        title: 'Activity Log',
+        href: '/dashboard/audit-logs',
+        description: 'Review your recent actions',
+        icon: <ScrollText className="w-5 h-5" />,
+      },
+    ],
+    []
+  );
+
   return (
     <AuthGuard requiredRole="attendee">
       <DashboardLayout>
-        <div className="p-2 space-y-8 max-w-[1600px] mx-auto">
-          {/* Header Section */}
-          <div className="flex items-center justify-between">
+        <div className="p-4 space-y-6 max-w-[1600px] mx-auto">
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h1 className="text-4xl font-black tracking-tight text-foreground uppercase">Attendee Dashboard</h1>
-              <p className="text-sm text-muted-foreground mt-1 font-medium italic">Welcome back! Manage your event registrations and profile.</p>
+              <h1 className="text-3xl font-black text-foreground">Attendee Dashboard</h1>
+              <p className="text-sm text-muted-foreground">Your events, registrations, and activity at a glance.</p>
             </div>
-            <div className="hidden md:block text-right">
-              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">System Status</p>
-              <div className="flex items-center gap-2 mt-1">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-xs font-bold">Online</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Core Statistics Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-card border border-border/60 p-6 rounded-md shadow-sm flex items-center justify-between group hover:border-primary/50 transition-colors">
-              <div>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">My Events</p>
-                <p className="text-3xl font-black">{userRegistrations.length}</p>
-                <p className="text-[10px] text-muted-foreground font-bold mt-1">Total participated</p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/20 transition-transform group-hover:scale-110">
-                <Calendar className="w-6 h-6 text-white" />
-              </div>
-            </div>
-
-            <div className="bg-card border border-border/60 p-6 rounded-md shadow-sm flex items-center justify-between group hover:border-primary/50 transition-colors">
-              <div>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Upcoming</p>
-                <p className="text-3xl font-black">{upcomingCount}</p>
-                <p className="text-[10px] text-green-500 font-bold mt-1">Confirmed registrations</p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/20 transition-transform group-hover:scale-110">
-                <Ticket className="w-6 h-6 text-white" />
-              </div>
-            </div>
-
-            <div className="bg-card border border-border/60 p-6 rounded-md shadow-sm flex items-center justify-between group hover:border-primary/50 transition-colors">
-              <div>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Completed</p>
-                <p className="text-3xl font-black">{attendedCount}</p>
-                <p className="text-[10px] text-muted-foreground font-bold mt-1">Sessions attended</p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-purple-500 flex items-center justify-center shadow-lg shadow-purple-500/20 transition-transform group-hover:scale-110">
-                <Zap className="w-6 h-6 text-white" />
-              </div>
-            </div>
-
-            <div className="bg-card border border-border/60 p-6 rounded-md shadow-sm flex items-center justify-between group hover:border-primary/50 transition-colors">
-              <div>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Pending</p>
-                <p className="text-3xl font-black">{pendingCount}</p>
-                <p className="text-[10px] text-amber-500 font-bold mt-1">Awaiting approval</p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/20 transition-transform group-hover:scale-110">
-                <Clock className="w-6 h-6 text-white" />
+            <div className="text-right hidden md:block">
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase">Status</p>
+              <div className="flex items-center gap-2 justify-end mt-1">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-xs font-semibold text-foreground">Online</span>
               </div>
             </div>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Recent Activity Section */}
-            <div className="lg:col-span-1 space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-black uppercase text-foreground">Recent Activity</h2>
-                <ArrowRight className="w-4 h-4 text-green-500" />
-              </div>
-              <div className="bg-card border border-border/60 rounded-md shadow-sm overflow-hidden flex flex-col h-[500px]">
-                <div className="flex-1 overflow-auto p-4 space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <MetricCard
+              title="My Events"
+              value={userRegistrations.length}
+              subtitle="All-time registrations"
+              icon={<CalendarIcon className="w-5 h-5 text-primary" />}
+            />
+            <MetricCard
+              title="Upcoming"
+              value={upcomingCount}
+              subtitle="Confirmed seats"
+              icon={<Ticket className="w-5 h-5 text-primary" />}
+            />
+            <MetricCard
+              title="Completed"
+              value={attendedCount}
+              subtitle="Sessions attended"
+              icon={<Zap className="w-5 h-5 text-primary" />}
+            />
+            <MetricCard
+              title="Pending"
+              value={pendingCount}
+              subtitle="Awaiting approval"
+              icon={<Clock className="w-5 h-5 text-primary" />}
+            />
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {quickActions.map((action) => (
+              <Link
+                key={action.href}
+                href={action.href}
+                className="group border border-border rounded-md p-4 bg-card shadow-sm hover:border-primary/60 transition-colors flex items-center gap-3"
+              >
+                <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                  {action.icon}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground truncate">{action.title}</p>
+                  <p className="text-xs text-muted-foreground truncate">{action.description}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-4">
+            <Card className="lg:col-span-2 border-border">
+              <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <CardTitle>Event Calendar</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Pick a date to see events. Dates with dots have scheduled sessions.
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/dashboard/events" className="gap-2 flex items-center">
+                    <ListChecks className="w-4 h-4" />
+                    View all events
+                  </Link>
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="rounded-md border border-border p-3 bg-muted/30">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(day) => day && setSelectedDate(day)}
+                    modifiers={{ event: eventDates }}
+                    modifiersClassNames={{
+                      event: 'after:content-[""] after:w-1.5 after:h-1.5 after:bg-primary after:rounded-full after:block after:mx-auto after:mt-1',
+                    }}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-foreground">
+                      {selectedDate ? formatPHDate(selectedDate) : 'Select a date'}
+                    </h3>
+                    <span className="text-xs text-muted-foreground">
+                      {selectedDayEvents.length} {selectedDayEvents.length === 1 ? 'event' : 'events'}
+                    </span>
+                  </div>
+                  {selectedDayEvents.length > 0 ? (
+                    <div className="space-y-3">
+                      {selectedDayEvents.map((ev) => (
+                        <div
+                          key={ev.id}
+                          className="border border-border rounded-md p-3 flex flex-col gap-1 bg-card/60"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="font-semibold text-foreground leading-tight">{ev.title}</p>
+                            <span className="text-[11px] font-semibold uppercase px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/30">
+                              {ev.status ?? 'upcoming'}
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground flex items-center gap-2">
+                            <Clock className="w-4 h-4" />
+                            {ev.time ? formatTime12h(ev.time) : 'Time TBA'}
+                          </p>
+                          <p className="text-sm text-muted-foreground flex items-center gap-2">
+                            <MapPin className="w-4 h-4" />
+                            {ev.location || 'TBA'}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="border border-dashed border-border rounded-md p-4 text-sm text-muted-foreground text-center">
+                      No events scheduled for this date.
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="space-y-4">
+              <Card className="border-border">
+                <CardHeader>
+                  <CardTitle>Upcoming Highlights</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {upcomingEvents.length > 0 ? (
+                    upcomingEvents.map((ev) => (
+                      <div
+                        key={ev.id}
+                        className="border border-border rounded-md p-3 hover:border-primary/50 transition-colors"
+                      >
+                        <p className="text-sm font-semibold text-foreground leading-tight">{ev.title}</p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-2 mt-1">
+                          <CalendarIcon className="w-4 h-4" />
+                          {formatPHDate(ev.dateObj)}
+                        </p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-2">
+                          <Clock className="w-4 h-4" />
+                          {ev.time ? formatTime12h(ev.time) : 'Time TBA'}
+                        </p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-2">
+                          <MapPin className="w-4 h-4" />
+                          {ev.location || 'Location TBA'}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No upcoming events yet.</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="border-border">
+                <CardHeader className="flex items-center justify-between">
+                  <CardTitle>Recent Activity</CardTitle>
+                  <Link href="/dashboard/audit-logs" className="text-xs font-semibold text-primary hover:underline">
+                    View all
+                  </Link>
+                </CardHeader>
+                <CardContent className="space-y-3 max-h-[360px] overflow-auto">
                   {recentActivity.length > 0 ? (
                     recentActivity.map((activity) => {
                       const toneClass =
@@ -133,87 +315,52 @@ export default function DashboardPage() {
                                 : 'text-muted-foreground';
 
                       return (
-                        <div key={activity.id} className="flex gap-4 group">
-                          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
-                            <ScrollText className={`w-4 h-4 ${toneClass}`} />
+                        <div key={activity.id} className="border border-border rounded-md p-3 space-y-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-sm font-semibold text-foreground leading-tight">{activity.summary}</p>
+                            <span className="text-[10px] uppercase px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border">
+                              {activity.action}
+                            </span>
                           </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center justify-between mb-1">
-                              <p className="text-[13px] font-bold truncate pr-2">{activity.summary}</p>
-                              <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded border bg-muted text-muted-foreground border-border">
-                                {activity.action}
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-muted-foreground italic mb-1">
-                              {formatPHDateTime(activity.createdAt)}
-                            </p>
-                          </div>
+                          <p className={`text-xs flex items-center gap-2 ${toneClass}`}>
+                            <Activity className="w-3.5 h-3.5" />
+                            {activity.target}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground">{formatPHDateTime(activity.createdAt)}</p>
                         </div>
                       );
                     })
                   ) : (
-                    <div className="h-full flex flex-col items-center justify-center text-muted-foreground italic space-y-2">
-                      <Ticket className="w-8 h-8 opacity-20" />
-                      <p className="text-xs">No activity yet.</p>
-                    </div>
+                    <div className="text-sm text-muted-foreground text-center py-4">No activity yet.</div>
                   )}
-                </div>
-                <div className="p-4 border-t border-border bg-muted/10 text-center">
-                  <Link href="/dashboard/audit-logs" className="text-[10px] font-black text-blue-600 hover:underline uppercase tracking-widest">
-                    VIEW ALL ACTIVITY
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Actions / Featured Section */}
-            <div className="lg:col-span-2 space-y-4">
-              <h2 className="text-lg font-black uppercase text-foreground">Quick Actions</h2>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <Link href="/dashboard/events" className="bg-card border border-border/60 p-10 rounded-md shadow-sm text-center space-y-4 hover:border-primary/50 transition-all hover:shadow-md group">
-                  <div className="p-4 bg-blue-500/10 rounded-full inline-block">
-                    <Plus className="w-8 h-8 text-blue-600 transition-transform group-hover:rotate-90" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-base uppercase">Discover Events</p>
-                    <p className="text-[11px] text-muted-foreground mt-1">Browse and join upcoming workshops</p>
-                  </div>
-                </Link>
-
-                <Link href="/dashboard/registrations" className="bg-card border border-border/60 p-10 rounded-md shadow-sm text-center space-y-4 hover:border-primary/50 transition-all hover:shadow-md group">
-                  <div className="p-4 bg-green-500/10 rounded-full inline-block">
-                    <Ticket className="w-8 h-8 text-green-600 transition-transform group-hover:scale-110" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-base uppercase">My Registrations</p>
-                    <p className="text-[11px] text-muted-foreground mt-1">Manage your active event registrations</p>
-                  </div>
-                </Link>
-
-                <Link href="/dashboard/profile" className="bg-card border border-border/60 p-10 rounded-md shadow-sm text-center space-y-4 hover:border-primary/50 transition-all hover:shadow-md group">
-                  <div className="p-4 bg-purple-500/10 rounded-full inline-block">
-                    <Users className="w-8 h-8 text-purple-600 transition-transform group-hover:scale-110" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-base uppercase">Member Profile</p>
-                    <p className="text-[11px] text-muted-foreground mt-1">Update your personal information</p>
-                  </div>
-                </Link>
-
-                <Link href="/dashboard/audit-logs" className="bg-card border border-border/60 p-10 rounded-md shadow-sm text-center space-y-4 hover:border-primary/50 transition-all hover:shadow-md group">
-                  <div className="p-4 bg-orange-500/10 rounded-full inline-block">
-                    <ScrollText className="w-8 h-8 text-orange-600 transition-transform group-hover:scale-110" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-base uppercase">Activity Logs</p>
-                    <p className="text-[11px] text-muted-foreground mt-1">Review your recent system interactions</p>
-                  </div>
-                </Link>
-              </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
       </DashboardLayout>
     </AuthGuard>
+  );
+}
+
+type MetricCardProps = {
+  title: string;
+  value: number | string;
+  subtitle: string;
+  icon: ReactNode;
+};
+
+function MetricCard({ title, value, subtitle, icon }: MetricCardProps) {
+  return (
+    <Card className="border-border shadow-sm">
+      <CardContent className="p-4 flex items-center justify-between">
+        <div>
+          <p className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide">{title}</p>
+          <p className="text-3xl font-bold mt-1">{value}</p>
+          <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
+        </div>
+        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">{icon}</div>
+      </CardContent>
+    </Card>
   );
 }
