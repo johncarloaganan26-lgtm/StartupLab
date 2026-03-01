@@ -91,7 +91,7 @@ export default function AdminDashboardPage() {
 
   const donutData = useMemo(() => {
     const base = stats?.registrationTrend ?? [];
-    const colors = ['#FBC02D', '#F97316', '#38BDF8', '#22C55E'];
+    const colors = ['#FBC02D', '#F97316', '#38BDF8', '#1f7fe0'];
     return base.slice(-4).map((item, idx) => ({
       name: item.name || `Segment ${idx + 1}`,
       value: item.registrations ?? 0,
@@ -136,31 +136,33 @@ export default function AdminDashboardPage() {
     <AuthGuard requiredRole="admin">
       <AdminLayout>
         <div className="p-4 space-y-6 max-w-[1600px] mx-auto">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="flex flex-col gap-1">
-              <h1 className="text-3xl font-black text-foreground">Admin Dashboard</h1>
-              <p className="text-sm text-muted-foreground">Snapshot of attendance, events, and activity.</p>
-            </div>
-            <div className="text-right">
-              <p className="text-[11px] font-semibold text-muted-foreground uppercase">Status</p>
-              <div className="flex items-center gap-2 justify-end mt-1">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-xs font-semibold text-foreground">Online</span>
+          <div className="admin-page-header space-y-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex flex-col gap-1">
+                <h1 className="text-3xl lg:text-4xl font-black text-foreground uppercase tracking-tight">Admin Dashboard</h1>
+                <p className="text-sm text-muted-foreground font-medium italic mt-2">Snapshot of attendance, events, and activity.</p>
+              </div>
+              <div className="text-right">
+                <p className="text-[11px] font-black text-muted-foreground uppercase tracking-widest">Status</p>
+                <div className="flex items-center gap-2 justify-end mt-1">
+                  <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                  <span className="text-xs font-black text-foreground uppercase tracking-wider">Online</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex flex-wrap gap-2">
-            <StatPill label="Total Attendees" value={totalAttendees} icon={<Users className="w-4 h-4" />} />
-            <StatPill label="Yearly Events" value={totalEvents} icon={<Calendar className="w-4 h-4" />} />
-            <StatPill label="Monthly Attendees" value={monthlyAttendees} delta={regGrowth} icon={<Activity className="w-4 h-4" />} />
-            <StatPill label="Monthly Events" value={monthlyEvents} delta={eventGrowth} icon={<TrendingUp className="w-4 h-4" />} />
+            <div className="flex flex-wrap gap-2">
+              <StatPill label="Total Attendees" value={totalAttendees} icon={<Users className="w-4 h-4" />} />
+              <StatPill label="Yearly Events" value={totalEvents} icon={<Calendar className="w-4 h-4" />} />
+              <StatPill label="Monthly Attendees" value={monthlyAttendees} delta={regGrowth} icon={<Activity className="w-4 h-4" />} />
+              <StatPill label="Monthly Events" value={monthlyEvents} delta={eventGrowth} icon={<TrendingUp className="w-4 h-4" />} />
+            </div>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-4">
             <Card className="lg:col-span-2 border-border">
-              <CardHeader>
-                <CardTitle>Monthly Trend</CardTitle>
+              <CardHeader className="border-b border-border bg-slate-50/50">
+                <CardTitle className="text-base font-black text-[#334155] uppercase tracking-tight">Monthly Trend</CardTitle>
               </CardHeader>
               <CardContent className="h-[320px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -176,8 +178,8 @@ export default function AdminDashboardPage() {
             </Card>
 
             <Card className="border-border">
-              <CardHeader>
-                <CardTitle>Registrations Breakdown</CardTitle>
+              <CardHeader className="border-b border-border bg-slate-50/50">
+                <CardTitle className="text-base font-black text-[#334155] uppercase tracking-tight">Registrations Breakdown</CardTitle>
               </CardHeader>
               <CardContent className="h-[320px] flex items-center justify-center">
                 <ResponsiveContainer width="100%" height="100%">
@@ -195,9 +197,9 @@ export default function AdminDashboardPage() {
           </div>
 
           <div className="grid lg:grid-cols-2 gap-4">
-            <Card className="border-border">
-              <CardHeader className="flex items-center justify-between">
-                <CardTitle>Recent Activity</CardTitle>
+            <Card className="border-border rounded-none shadow-sm">
+              <CardHeader className="flex flex-row items-center justify-between border-b border-border bg-slate-50/50">
+                <CardTitle className="text-base font-black text-[#334155] uppercase tracking-tight">Recent Activity</CardTitle>
                 <Link href="/admin/audit-logs" className="text-xs font-semibold text-primary hover:underline">
                   View all
                 </Link>
@@ -209,30 +211,30 @@ export default function AdminDashboardPage() {
                     const toneClass = /delete|remove|revoke|fail/i.test(actionText)
                       ? 'text-red-600'
                       : /create|add|approve|confirm/i.test(actionText)
-                        ? 'text-green-600'
+                        ? 'text-blue-600'
                         : /update|edit|change/i.test(actionText)
                           ? 'text-blue-600'
                           : 'text-muted-foreground';
 
                     return (
-                      <div key={log.id} className="border border-border rounded-md p-3 space-y-1 flex gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <div key={log.id} className="border border-border rounded-none p-3 space-y-1 flex gap-3 bg-white hover:bg-slate-50 transition-colors shadow-sm">
+                        <div className="w-10 h-10 rounded-none bg-[#1f7fe0]/10 text-[#1f7fe0] flex items-center justify-center shrink-0 border border-[#1f7fe0]/20">
                           <Activity className="w-4 h-4" />
                         </div>
                         <div className="min-w-0 flex-1 space-y-1">
                           <div className="flex items-center justify-between gap-2">
-                            <p className="text-sm font-semibold text-foreground leading-tight capitalize truncate">
+                            <p className="text-sm font-bold text-[#334155] leading-tight capitalize truncate">
                               {actionText}
                             </p>
-                            <span className="text-[10px] uppercase px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border shrink-0">
+                            <span className="text-[10px] uppercase px-2 py-0.5 rounded-none bg-muted text-muted-foreground border border-border shrink-0 font-bold">
                               {log.entityType}
                             </span>
                           </div>
-                          <p className={`text-xs flex items-center gap-2 ${toneClass}`}>
+                          <p className={`text-xs flex items-center gap-2 font-bold ${toneClass}`}>
                             <Activity className="w-3.5 h-3.5" />
                             {log.entityId || 'N/A'}
                           </p>
-                          <p className="text-[11px] text-muted-foreground">
+                          <p className="text-[11px] text-muted-foreground font-medium">
                             {log.createdAt ? formatPHDateTime(log.createdAt) : ''}
                           </p>
                         </div>
@@ -245,23 +247,23 @@ export default function AdminDashboardPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-border">
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
+            <Card className="border-border rounded-none shadow-sm">
+              <CardHeader className="border-b border-border bg-slate-50/50">
+                <CardTitle className="text-base font-black text-[#334155] uppercase tracking-tight">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {quickActions.map((action) => (
                   <Link
                     key={action.href}
                     href={action.href}
-                    className="group border border-border rounded-md p-3 bg-card hover:border-primary/60 transition-colors flex items-center gap-3"
+                    className="group border border-border rounded-none p-4 bg-white hover:bg-slate-50 hover:border-[#1f7fe0]/60 transition-all flex items-center gap-4 shadow-sm"
                   >
-                    <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-none bg-[#1f7fe0]/10 text-[#1f7fe0] flex items-center justify-center border border-[#1f7fe0]/20">
                       {action.icon}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate">{action.title}</p>
-                      <p className="text-xs text-muted-foreground truncate">{action.description}</p>
+                      <p className="text-sm font-bold text-[#334155] truncate">{action.title}</p>
+                      <p className="text-[11px] text-[#64748b] truncate uppercase font-semibold tracking-wide">{action.description}</p>
                     </div>
                   </Link>
                 ))}
@@ -269,40 +271,44 @@ export default function AdminDashboardPage() {
             </Card>
           </div>
 
-          <Card className="border-border">
-            <CardHeader>
-              <CardTitle>Recent Registrations</CardTitle>
+          <Card className="border-border rounded-none shadow-md">
+            <CardHeader className="border-b border-border bg-slate-50/50">
+              <CardTitle className="text-lg font-black text-[#334155]">Recent Registrations</CardTitle>
             </CardHeader>
-            <CardContent className="overflow-x-auto">
+            <CardContent className="overflow-x-auto p-0">
               <table className="min-w-full text-sm">
-                <thead className="text-left text-muted-foreground">
+                <thead className="bg-slate-50 text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border">
                   <tr>
-                    <th className="py-2 pr-4">ID</th>
-                    <th className="py-2 pr-4">User</th>
-                    <th className="py-2 pr-4">Event</th>
-                    <th className="py-2 pr-4">Status</th>
-                    <th className="py-2 pr-4">Created</th>
+                    <th className="py-3 px-6">ID</th>
+                    <th className="py-3 px-6">User</th>
+                    <th className="py-3 px-6">Event</th>
+                    <th className="py-3 px-6">Status</th>
+                    <th className="py-3 px-6">Created</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {recentRows.length > 0 ? (
                     recentRows.map((row) => (
-                      <tr key={row.id} className="hover:bg-muted/40">
-                        <td className="py-2 pr-4 font-mono text-xs truncate max-w-[160px]">{row.id}</td>
-                        <td className="py-2 pr-4">
+                      <tr key={row.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="py-3 px-6 font-mono text-xs truncate max-w-[160px] text-muted-foreground font-bold">{row.id}</td>
+                        <td className="py-3 px-6 text-[#334155] font-bold">
                           {row.userName || 'Unknown'}
-                          <div className="text-xs text-muted-foreground">{row.userEmail || ''}</div>
+                          <div className="text-[11px] text-muted-foreground font-normal">{row.userEmail || ''}</div>
                         </td>
-                        <td className="py-2 pr-4">{row.eventTitle || '-'}</td>
-                        <td className="py-2 pr-4 capitalize text-primary">{row.status || '-'}</td>
-                        <td className="py-2 pr-4 text-xs text-muted-foreground">
+                        <td className="py-3 px-6 text-[#334155] font-medium">{row.eventTitle || '-'}</td>
+                        <td className="py-3 px-6 capitalize">
+                          <span className="px-2 py-0.5 rounded-none border border-current text-[10px] font-black uppercase tracking-tighter text-[#1f7fe0]">
+                            {row.status || '-'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-6 text-xs text-muted-foreground font-medium">
                           {row.registeredAt ? formatPHDateTime(row.registeredAt) : '-'}
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td className="py-4 text-muted-foreground" colSpan={5}>
+                      <td className="py-8 text-muted-foreground text-center" colSpan={5}>
                         No recent registrations found.
                       </td>
                     </tr>
@@ -331,18 +337,16 @@ function StatPill({
   const showDelta = typeof delta === 'number';
   const deltaClass =
     showDelta && delta !== null
-      ? delta >= 0
-        ? 'text-green-600'
-        : 'text-amber-600'
+      ? 'text-[#1f7fe0]'
       : 'text-muted-foreground';
 
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm shadow-sm">
-      <span className="text-primary">{icon}</span>
-      <span className="font-semibold text-foreground">{value}</span>
-      <span className="text-xs text-muted-foreground">{label}</span>
+    <div className="inline-flex items-center gap-2 rounded-none border border-border bg-card px-3 py-1.5 text-sm shadow-sm ring-1 ring-black/5">
+      <span className="text-[#1f7fe0]">{icon}</span>
+      <span className="font-bold text-[#1a1a1a] dark:text-white">{value}</span>
+      <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{label}</span>
       {showDelta && (
-        <span className={`text-xs font-semibold ${deltaClass}`}>
+        <span className={`text-[11px] font-bold ${deltaClass}`}>
           {delta! >= 0 ? '+' : ''}
           {delta}%
         </span>
@@ -350,3 +354,5 @@ function StatPill({
     </div>
   );
 }
+
+

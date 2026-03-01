@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useMemo, useState, useEffect } from 'react';
 import { AdminLayout } from '@/components/admin-layout';
@@ -133,6 +133,7 @@ export default function RegistrationsPage() {
       label: 'Status',
       value: statusFilter,
       onChange: setStatusFilter,
+      defaultValue: 'all',
       options: [
         { label: 'All Status', value: 'all' },
         { label: 'Approved', value: 'confirmed' },
@@ -148,6 +149,7 @@ export default function RegistrationsPage() {
       label: 'Event',
       value: eventFilter,
       onChange: setEventFilter,
+      defaultValue: 'all',
       options: eventOptions,
     },
   ];
@@ -357,7 +359,7 @@ export default function RegistrationsPage() {
 
   const statusMap: Record<string, { label: string; class: string }> = {
     pending: { label: 'Pending', class: 'bg-yellow-100 text-yellow-700' },
-    confirmed: { label: 'Approved', class: 'bg-green-100 text-green-700' },
+    confirmed: { label: 'Approved', class: 'bg-blue-100 text-blue-700' },
     attended: { label: 'Attended', class: 'bg-blue-100 text-blue-700' },
     cancelled: { label: 'Cancelled', class: 'bg-red-100 text-red-700' },
     waitlisted: { label: 'Waitlisted', class: 'bg-orange-100 text-orange-700' },
@@ -369,11 +371,11 @@ export default function RegistrationsPage() {
     <AuthGuard requiredRole="admin">
       <AdminLayout>
         <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl lg:text-4xl font-bold text-foreground">
+          <div className="admin-page-header">
+            <h1 className="text-3xl lg:text-4xl font-black text-foreground uppercase tracking-tight">
               Registrations
             </h1>
-            <p className="text-muted-foreground mt-2">
+            <p className="text-sm text-muted-foreground mt-2 font-medium italic">
               Review and manage event registration requests.
             </p>
           </div>
@@ -391,13 +393,13 @@ export default function RegistrationsPage() {
           />
 
           {selectedIds.length > 0 && (
-            <div className="print:hidden rounded-lg border border-border bg-card p-3">
+            <div className="print:hidden rounded-none border border-border bg-card p-3">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm font-medium text-foreground">
                   {selectedIds.length} selected
                 </p>
                 <div className="flex items-center gap-2">
-                  <Button size="sm" onClick={() => prepareAction('approve')} className="bg-green-600 hover:bg-green-700">
+                  <Button size="sm" onClick={() => prepareAction('approve')} className="bg-blue-600 hover:bg-blue-700">
                     <Check className="mr-1.5 h-4 w-4" />
                     Approve
                   </Button>
@@ -427,21 +429,22 @@ export default function RegistrationsPage() {
               <Loader2 className="w-6 h-6 animate-spin text-primary" />
             </div>
           ) : (
-            <div className="overflow-x-auto bg-card border border-border rounded-lg">
+            <div className="overflow-x-auto bg-card border border-border rounded-none">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-border bg-muted/50 text-left">
-                    <th className="px-6 py-3 w-12 text-center">
+                  <tr className="border-b border-slate-200 bg-slate-50/80 text-left">
+                    <th className="px-6 py-4 w-12 text-center">
                       <Checkbox
                         checked={selectedIds.length === paginatedData.length && paginatedData.length > 0}
                         onCheckedChange={handleSelectAll}
+                        className="rounded-none border-slate-300"
                       />
                     </th>
-                    <th className="px-6 py-3 text-sm font-semibold text-foreground">Attendee</th>
-                    <th className="px-6 py-3 text-sm font-semibold text-foreground">Event</th>
-                    <th className="px-6 py-3 text-sm font-semibold text-foreground">Status</th>
-                    <th className="px-6 py-3 text-sm font-semibold text-foreground">Date</th>
-                    <th className="px-6 py-3 text-right text-sm font-semibold text-foreground">Actions</th>
+                    <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Attendee</th>
+                    <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Event</th>
+                    <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">Status</th>
+                    <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Date</th>
+                    <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -466,8 +469,8 @@ export default function RegistrationsPage() {
                             {formatPHDate(reg.eventDate)}
                           </p>
                         </td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${status.class}`}>
+                        <td className="px-6 py-4 text-center">
+                          <span className={`px-2 py-0.5 rounded-none text-[10px] font-black uppercase tracking-wider ${status.class}`}>
                             {reg.statusLabel || status.label}
                           </span>
                         </td>
@@ -481,7 +484,7 @@ export default function RegistrationsPage() {
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  className="h-8 w-8 p-0 text-green-600 hover:text-green-700"
+                                  className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700"
                                   onClick={async () => {
                                     setGlobalLoading(true, 'Approving registration...');
                                     try {
@@ -495,7 +498,7 @@ export default function RegistrationsPage() {
                                 >
                                   <Check className="w-4 h-4" />
                                 </Button>
-                              <Button
+                                <Button
                                   size="sm"
                                   variant="ghost"
                                   className="h-8 w-8 p-0 text-destructive hover:text-destructive"
@@ -544,7 +547,7 @@ export default function RegistrationsPage() {
                                       toast({
                                         title: 'Success',
                                         description: `${reg.userName || 'Attendee'} marked as no-show.`,
-                                        className: 'bg-green-50 text-green-900 border border-green-200',
+                                        className: 'bg-blue-50 text-blue-900 border border-blue-200',
                                       });
                                       await loadRegistrations();
                                       refreshGlobalRegistrations();
@@ -595,11 +598,11 @@ export default function RegistrationsPage() {
           )}
 
           <Dialog open={!!selectedRegistration} onOpenChange={() => setSelectedRegistration(null)}>
-            <DialogContent className="max-w-md bg-card border-border">
-              <DialogHeader>
-                <DialogTitle>Registration Details</DialogTitle>
+            <DialogContent className="max-w-md bg-white border-border rounded-none shadow-2xl p-0">
+              <DialogHeader className="p-6 pb-2 border-b border-border bg-slate-50/50">
+                <DialogTitle className="text-lg font-black text-[#334155] uppercase tracking-tight">Registration Details</DialogTitle>
               </DialogHeader>
-              <div className="space-y-6 py-4">
+              <div className="p-6">
                 <div className="space-y-4">
                   <div>
                     <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Attendee Information</h4>
@@ -614,7 +617,7 @@ export default function RegistrationsPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Status</h4>
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold block w-fit ${statusMap[selectedRegistration?.status]?.class}`}>
+                      <span className={`px-2 py-0.5 rounded-none text-[10px] font-black uppercase tracking-wider block w-fit ${statusMap[selectedRegistration?.status]?.class}`}>
                         {statusMap[selectedRegistration?.status]?.label || selectedRegistration?.status}
                       </span>
                     </div>
@@ -692,6 +695,7 @@ export default function RegistrationsPage() {
           />
         </div>
       </AdminLayout>
-    </AuthGuard>
+    </AuthGuard >
   );
 }
+

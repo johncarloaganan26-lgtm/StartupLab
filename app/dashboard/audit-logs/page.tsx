@@ -120,25 +120,25 @@ export default function UserAuditLogsPage() {
               <Loader2 className="w-6 h-6 animate-spin text-primary" />
             </div>
           ) : error ? (
-            <div className="bg-card border border-border rounded-lg p-6 text-center">
+            <div className="bg-card border border-border rounded-none p-6 text-center">
               <p className="text-sm text-destructive">{error}</p>
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto bg-card border border-border rounded-lg">
+              <div className="overflow-x-auto bg-white border border-border rounded-none shadow-sm">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-border bg-muted/50 text-left">
-                      <th className="px-6 py-3 text-sm font-semibold text-foreground">Timestamp</th>
-                      <th className="px-6 py-3 text-sm font-semibold text-foreground">Actor</th>
-                      <th className="px-6 py-3 text-sm font-semibold text-foreground">Action</th>
-                      <th className="px-6 py-3 text-sm font-semibold text-foreground">Summary</th>
-                      <th className="px-6 py-3 text-right text-sm font-semibold text-foreground">Details</th>
+                    <tr className="border-b border-border bg-slate-50/80 text-left">
+                      <th className="px-6 py-4 text-xs font-black text-[#475569] uppercase tracking-wider">Timestamp</th>
+                      <th className="px-6 py-4 text-xs font-black text-[#475569] uppercase tracking-wider">Actor</th>
+                      <th className="px-6 py-4 text-xs font-black text-[#475569] uppercase tracking-wider">Action</th>
+                      <th className="px-6 py-4 text-xs font-black text-[#475569] uppercase tracking-wider">Summary</th>
+                      <th className="px-6 py-4 text-right text-xs font-black text-[#475569] uppercase tracking-wider">Details</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
                     {paginatedData.map((row) => (
-                      <tr key={row.id} className="hover:bg-muted/30 transition-colors">
+                      <tr key={row.id} className="hover:bg-slate-50/50 transition-colors bg-white">
                         <td className="px-6 py-4 text-sm text-muted-foreground whitespace-nowrap">
                           {formatPHDateTime(row.createdAt)}
                         </td>
@@ -153,11 +153,12 @@ export default function UserAuditLogsPage() {
                         </td>
                         <td className="px-6 py-4 text-right">
                           <Button
-                            variant="ghost"
+                            variant="excel"
                             size="sm"
+                            className="h-8"
                             onClick={() => setSelectedLog(row)}
                           >
-                            <Eye className="w-4 h-4" />
+                            <span className="text-xs font-bold">Details</span>
                           </Button>
                         </td>
                       </tr>

@@ -108,7 +108,7 @@ export default function AdminReportsPage() {
   const statusDistributionData = report
     ? Object.entries(report.statusDistribution).map(([name, value]) => {
       const colorMap: Record<string, string> = {
-        confirmed: '#10b981',
+        confirmed: '#1f7fe0',
         pending: '#f59e0b',
         attended: '#3b82f6',
         cancelled: '#ef4444',
@@ -120,7 +120,7 @@ export default function AdminReportsPage() {
       };
     })
     : [
-      { name: 'Confirmed', value: registrations.filter(r => r.status === 'confirmed').length, color: '#10b981' },
+      { name: 'Confirmed', value: registrations.filter(r => r.status === 'confirmed').length, color: '#1f7fe0' },
       { name: 'Pending', value: registrations.filter(r => r.status === 'pending').length, color: '#f59e0b' },
       { name: 'Attended', value: registrations.filter(r => r.status === 'attended').length, color: '#3b82f6' },
       { name: 'Cancelled', value: registrations.filter(r => r.status === 'cancelled').length, color: '#ef4444' },
@@ -186,19 +186,19 @@ export default function AdminReportsPage() {
     <AuthGuard requiredRole="admin">
       <AdminLayout>
         <div className="p-4 space-y-6 max-w-[1600px] mx-auto">
-          <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="admin-page-header flex flex-wrap items-start justify-between gap-3">
             <div>
               <h1 className="text-3xl font-black text-foreground">Reports & Analytics</h1>
               <p className="text-sm text-muted-foreground">Insights on events, registrations, and capacity.</p>
             </div>
             <div className="flex items-center gap-2 print:hidden">
-              <Button variant="outline" size="sm" onClick={handleExport} className="gap-2">
-                <FileDown className="w-4 h-4" />
-                Export
+              <Button size="sm" variant="excel" onClick={handleExport} className="h-10 gap-2 px-4 shadow-md group">
+                <FileDown className="w-4 h-4 text-[#1f7fe0] group-hover:scale-110 transition-transform" />
+                <span className="hidden sm:inline font-black text-xs uppercase tracking-widest text-[#475569]">Export</span>
               </Button>
-              <Button variant="outline" size="sm" onClick={handlePrint} className="gap-2">
-                <Printer className="w-4 h-4" />
-                Print
+              <Button size="sm" variant="excel" onClick={handlePrint} className="h-10 gap-2 px-4 shadow-md group">
+                <Printer className="w-4 h-4 text-[#1f7fe0] group-hover:scale-110 transition-transform" />
+                <span className="hidden sm:inline font-black text-xs uppercase tracking-widest text-[#475569]">Print</span>
               </Button>
             </div>
           </div>
@@ -241,16 +241,16 @@ export default function AdminReportsPage() {
           </div>
 
           {error && (
-            <div className="bg-card border border-destructive/20 rounded-lg p-4">
+            <div className="bg-card border border-destructive/20 rounded-none p-4">
               <p className="text-sm text-destructive">{error}</p>
             </div>
           )}
 
-          <Card className="bg-card border-border print:hidden">
-            <CardHeader>
-              <CardTitle>Monthly Growth Trend</CardTitle>
+          <Card className="bg-white border-border rounded-none shadow-sm ring-1 ring-black/5 print:hidden">
+            <CardHeader className="border-b border-border bg-slate-50/50">
+              <CardTitle className="text-lg font-black text-[#334155]">Monthly Growth Trend</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={monthlyData.length > 0 ? monthlyData : [{ name: 'No Data', events: 0, registrations: 0 }]}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
@@ -260,7 +260,7 @@ export default function AdminReportsPage() {
                     contentStyle={{
                       backgroundColor: 'var(--color-card)',
                       border: `1px solid var(--color-border)`,
-                      borderRadius: '8px'
+                      borderRadius: '0px'
                     }}
                   />
                   <Legend />
@@ -274,7 +274,7 @@ export default function AdminReportsPage() {
                   <Line
                     type="monotone"
                     dataKey="registrations"
-                    stroke="#10b981"
+                    stroke="#1f7fe0"
                     strokeWidth={2}
                     name="Registrations"
                   />
@@ -284,11 +284,11 @@ export default function AdminReportsPage() {
           </Card>
 
           <div className="grid lg:grid-cols-2 gap-6 print:hidden">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle>Registration Status</CardTitle>
+            <Card className="bg-white border-border rounded-none shadow-sm ring-1 ring-black/5">
+              <CardHeader className="border-b border-border bg-slate-50/50">
+                <CardTitle className="text-lg font-black text-[#334155]">Registration Status</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
                     <Pie
@@ -298,6 +298,7 @@ export default function AdminReportsPage() {
                       innerRadius={60}
                       outerRadius={90}
                       dataKey="value"
+                      strokeWidth={0}
                     >
                       {statusDistributionData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
@@ -326,11 +327,11 @@ export default function AdminReportsPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle>Event Performance</CardTitle>
+            <Card className="bg-white border-border rounded-none shadow-sm ring-1 ring-black/5">
+              <CardHeader className="border-b border-border bg-slate-50/50">
+                <CardTitle className="text-lg font-black text-[#334155]">Event Performance</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={eventPerformance}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
@@ -343,7 +344,7 @@ export default function AdminReportsPage() {
                         borderRadius: '8px'
                       }}
                     />
-                    <Bar dataKey="filled" fill="var(--color-primary)" radius={[8, 8, 0, 0]} name="Filled Slots" />
+                    <Bar dataKey="filled" fill="#1f7fe0" radius={[0, 0, 0, 0]} name="Filled Slots" />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -369,18 +370,16 @@ function StatPill({
   const showDelta = typeof delta === 'number';
   const deltaClass =
     showDelta && delta !== null
-      ? delta >= 0
-        ? 'text-green-600'
-        : 'text-amber-600'
+      ? 'text-[#1f7fe0]'
       : 'text-muted-foreground';
 
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm shadow-sm">
-      <span className="text-primary">{icon}</span>
-      <span className="font-semibold text-foreground">{value}</span>
-      <span className="text-xs text-muted-foreground">{label}</span>
+    <div className="inline-flex items-center gap-2 rounded-none border border-border bg-white px-3 py-1.5 text-sm shadow-sm ring-1 ring-black/5">
+      <span className="text-[#1f7fe0]">{icon}</span>
+      <span className="font-bold text-[#1a1a1a] dark:text-white">{value}</span>
+      <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{label}</span>
       {showDelta && (
-        <span className={`text-xs font-semibold ${deltaClass}`}>
+        <span className={`text-[11px] font-bold ${deltaClass}`}>
           {delta! >= 0 ? '+' : ''}
           {delta}%
         </span>
@@ -388,3 +387,4 @@ function StatPill({
     </div>
   );
 }
+

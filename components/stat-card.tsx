@@ -24,7 +24,7 @@ export function StatCard({ label, value, icon: Icon, trend }: StatCardProps) {
             <div className="flex items-baseline gap-2">
               <p className="text-3xl font-black text-foreground tracking-tight">{value}</p>
               {trend && (
-                <div className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold ${trend.isPositive ? 'bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400' : 'bg-red-500/10 text-red-600 dark:bg-red-500/20 dark:text-red-400'}`}>
+                <div className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold ${trend.isPositive ? 'bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400' : 'bg-red-500/10 text-red-600 dark:bg-red-500/20 dark:text-red-400'}`}>
                   {trend.isPositive ? '↑' : '↓'} {trend.value}%
                 </div>
               )}
@@ -41,3 +41,4 @@ export function StatCard({ label, value, icon: Icon, trend }: StatCardProps) {
     </Card>
   );
 }
+

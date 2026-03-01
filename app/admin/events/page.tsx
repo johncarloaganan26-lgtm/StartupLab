@@ -88,6 +88,7 @@ export default function AdminEventsPage() {
       label: 'Status',
       value: statusFilter,
       onChange: setStatusFilter,
+      defaultValue: 'all',
       options: [
         { label: 'All Status', value: 'all' },
         { label: 'Published', value: 'published' },
@@ -99,6 +100,7 @@ export default function AdminEventsPage() {
       label: 'Sort',
       value: sortBy,
       onChange: setSortBy,
+      defaultValue: 'newest',
       options: [
         { label: 'Newest First', value: 'newest' },
         { label: 'Upcoming First', value: 'date-asc' },
@@ -179,12 +181,12 @@ export default function AdminEventsPage() {
     <AuthGuard requiredRole="admin">
       <AdminLayout>
         <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="admin-page-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl lg:text-4xl font-bold text-foreground">
+              <h1 className="text-3xl lg:text-4xl font-black text-foreground uppercase tracking-tight">
                 Manage Events
               </h1>
-              <p className="text-muted-foreground mt-2">
+              <p className="text-sm text-muted-foreground mt-2 font-medium italic">
                 Create, edit, and manage your events.
               </p>
             </div>
@@ -193,39 +195,38 @@ export default function AdminEventsPage() {
               if (!open) setEditingEventId(null);
             }}>
               <DialogTrigger asChild>
-                <Button className="gap-2 self-start sm:self-auto">
+                <Button className="gap-2 self-start sm:self-auto bg-[#1f7fe0] border-b-4 border-[#155ca0] hover:bg-[#1868b7] text-white rounded-none h-11 px-6 active:border-b-0 active:translate-y-1 transition-all">
                   <Plus className="w-4 h-4" />
-                  Create Event
+                  <span className="font-black text-xs uppercase tracking-widest">Create Event</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-card border-border">
-                <DialogHeader>
-                  <DialogTitle>{editingEventId ? 'Edit Event' : 'Create New Event'}</DialogTitle>
-                  <DialogDescription>
-                    Fill in the details below to {editingEventId ? 'update the' : 'create a new'} event.
-                  </DialogDescription>
+              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-white border-border rounded-none shadow-2xl p-0">
+                <DialogHeader className="p-6 pb-2 border-b border-border bg-slate-50/50">
+                  <DialogTitle className="text-lg font-black text-[#334155] uppercase tracking-tight">{editingEventId ? 'Edit Event' : 'Create New Event'}</DialogTitle>
                 </DialogHeader>
-                <EventForm
-                  initialData={events.find(e => e.id === editingEventId)}
-                  onSuccess={() => setIsFormOpen(false)}
-                />
+                <div className="p-6">
+                  <EventForm
+                    initialData={events.find(e => e.id === editingEventId)}
+                    onSuccess={() => setIsFormOpen(false)}
+                  />
+                </div>
               </DialogContent>
             </Dialog>
           </div>
 
           <Dialog open={!!selectedEvent} onOpenChange={(open) => { if (!open) { setSelectedEvent(null); setIsDescriptionExpanded(false); } }}>
-            <DialogContent className="max-w-4xl bg-card border-border max-h-[90vh] overflow-hidden flex flex-col">
+            <DialogContent className="max-w-4xl bg-white border-border rounded-none shadow-2xl max-h-[90vh] overflow-hidden flex flex-col p-0">
               <DialogHeader className="flex-shrink-0">
                 <DialogTitle className="text-xl font-bold">{selectedEvent?.title}</DialogTitle>
               </DialogHeader>
               <div className="overflow-y-auto flex-1 pr-2 min-h-0">
                 {selectedEvent?.image && (
-                  <div className="relative w-full h-48 sm:h-64 rounded-lg overflow-hidden border border-border mb-4 flex-shrink-0">
+                  <div className="relative w-full h-48 sm:h-64 rounded-none overflow-hidden border border-border mb-4 flex-shrink-0">
                     <img src={selectedEvent.image} alt={selectedEvent.title} className="w-full h-full object-cover" />
                   </div>
                 )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                  <div className="bg-muted/30 p-3 rounded-lg">
+                  <div className="bg-muted/30 p-3 rounded-none">
                     <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Schedule</h4>
                     <p className="text-sm font-medium text-foreground">
                       {selectedEvent && formatPHDate(selectedEvent.date)}
@@ -234,17 +235,17 @@ export default function AdminEventsPage() {
                       {selectedEvent && formatTime12h(selectedEvent.time)}
                     </p>
                   </div>
-                  <div className="bg-muted/30 p-3 rounded-lg">
+                  <div className="bg-muted/30 p-3 rounded-none">
                     <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Location</h4>
                     <p className="text-sm text-foreground">{selectedEvent?.location}</p>
                   </div>
-                  <div className="bg-muted/30 p-3 rounded-lg">
+                  <div className="bg-muted/30 p-3 rounded-none">
                     <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Status</h4>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${selectedEvent?.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-700'}`}>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${selectedEvent?.status === 'published' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-700'}`}>
                       {selectedEvent?.status}
                     </span>
                   </div>
-                  <div className="bg-muted/30 p-3 rounded-lg">
+                  <div className="bg-muted/30 p-3 rounded-none">
                     <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Registration</h4>
                     <p className="text-sm text-foreground">
                       {selectedEvent?.totalSlots - selectedEvent?.availableSlots} / {selectedEvent?.totalSlots} slots
@@ -254,7 +255,7 @@ export default function AdminEventsPage() {
                 <div className="mt-2">
                   <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Description</h4>
                   <div className="relative">
-                    <div className={`text-sm text-foreground whitespace-pre-wrap break-all leading-relaxed p-4 bg-muted/20 rounded-lg border border-border/50 ${!isDescriptionExpanded ? 'max-h-48 overflow-hidden' : ''}`}>
+                    <div className={`text-sm text-foreground whitespace-pre-wrap break-all leading-relaxed p-4 bg-muted/20 rounded-none border border-border/50 ${!isDescriptionExpanded ? 'max-h-48 overflow-hidden' : ''}`}>
                       {selectedEvent?.description}
                     </div>
                     {selectedEvent?.description && selectedEvent?.description.length > 500 && (
@@ -295,22 +296,23 @@ export default function AdminEventsPage() {
             onPrint={handlePrint}
           />
 
-          <div className="overflow-x-auto bg-card border border-border rounded-lg">
+          <div className="overflow-x-auto bg-card border border-border rounded-none">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-border bg-muted/50 text-left">
-                  <th className="px-6 py-3 w-12 text-center">
+                <tr className="border-b border-slate-200 bg-slate-50/80 text-left">
+                  <th className="px-6 py-4 w-12 text-center">
                     <Checkbox
                       checked={selectedIds.length === paginatedData.length && paginatedData.length > 0}
                       onCheckedChange={handleSelectAll}
+                      className="rounded-none border-slate-300"
                     />
                   </th>
-                  <th className="px-6 py-3 text-sm font-semibold text-foreground">Event</th>
-                  <th className="px-6 py-3 text-sm font-semibold text-foreground">Date & Time</th>
-                  <th className="px-6 py-3 text-sm font-semibold text-foreground">Location</th>
-                  <th className="px-6 py-3 text-sm font-semibold text-foreground text-center">Status</th>
-                  <th className="px-6 py-3 text-sm font-semibold text-foreground text-center">Capacity</th>
-                  <th className="px-6 py-3 text-right text-sm font-semibold text-foreground">Actions</th>
+                  <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Event</th>
+                  <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Date & Time</th>
+                  <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Location</th>
+                  <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">Status</th>
+                  <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">Capacity</th>
+                  <th className="px-6 py-4 text-right text-[11px] font-black text-slate-500 uppercase tracking-widest">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -343,7 +345,7 @@ export default function AdminEventsPage() {
                       {event.location}
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${event.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-700'
+                      <span className={`px-2 py-0.5 rounded-none text-[10px] font-black uppercase tracking-wider ${event.status === 'published' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-700'
                         }`}>
                         {event.status}
                       </span>
@@ -407,3 +409,4 @@ export default function AdminEventsPage() {
     </AuthGuard>
   );
 }
+

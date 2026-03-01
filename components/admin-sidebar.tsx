@@ -38,6 +38,8 @@ interface SidebarProps {
   isCollapsed?: boolean;
 }
 
+const ADMIN_SIDEBAR_GROUPS_KEY = 'admin-sidebar-open-groups';
+
 function FlatIcon({ name, className }: { name: string; className?: string }) {
   switch (name) {
     case 'dashboard':
@@ -120,69 +122,63 @@ export function AdminSidebar({ isCollapsed }: SidebarProps) {
     setMounted(true);
   }, []);
 
+  if (!mounted) return <div className={`${isCollapsed ? 'w-16' : 'w-[230px] md:w-[240px]'} bg-white h-screen shrink-0`} />;
+
   const logoSrc = mounted && theme === 'dark' ? '/login-logo-tight.png?v=4' : '/admin-logo-dark-tight.png?v=4';
 
   return (
-    <div className={`${isCollapsed ? 'w-16' : 'w-[260px] md:w-[300px]'} font-roboto bg-white dark:bg-black border-r border-border dark:border-slate-800 h-screen flex flex-col transition-all duration-300 z-40 relative p-2`}>
-      <div className="p-3 h-20 flex items-center justify-center border-b border-border">
+    <div className={`${isCollapsed ? 'w-16' : 'w-[230px] md:w-[240px]'} font-portal admin-excel-sidebar bg-white border-r border-[#eef1f5] h-screen flex flex-col transition-all duration-300 z-40 relative shadow-[5px_0_30px_rgba(0,0,0,0.04)] dark:bg-[#0f172a] dark:border-[#334155]`}>
+      {/* Header with Original Logo */}
+      <div className="px-4 py-3 h-[78px] flex items-center justify-center border-b border-[#f0f0f0] dark:border-[#334155]">
         <Link href="/" className="block">
           {!isCollapsed && (
-            <img 
-              src={logoSrc} 
-              alt="StartupLab" 
-              className="h-[56px] w-[180px] max-w-none object-contain"
+            <img
+              src={logoSrc}
+              alt="StartupLab"
+              className="h-[50px] w-[172px] max-w-none object-contain"
             />
           )}
           {isCollapsed && (
-            <img 
-              src="/stb.webp" 
-              alt="StartupLab" 
-              className="h-10 w-10 object-contain rounded-lg"
+            <img
+              src="/stb.webp"
+              alt="StartupLab"
+              className="h-9 w-9 object-contain rounded-sm"
             />
           )}
         </Link>
       </div>
 
-      <nav className="flex-1 pt-3 pb-1 space-y-4 overflow-y-auto overflow-x-hidden scrollbar-hide">
-        {navigation.map((section) => (
-          <div key={section.group} className="space-y-1">
-            {!isCollapsed && (
-              <div className="mx-2 my-1 px-3 py-3">
-                <div className="flex items-center gap-3">
-                  <FlatIcon name={section.groupIconName} className="w-6 h-6 text-[#3A3A3A] dark:text-slate-200" />
-                  <span className="sidebar-section-header text-[16px] text-black dark:text-slate-300">{section.group}</span>
-                </div>
-              </div>
-            )}
-            <div className={`${!isCollapsed ? 'ml-9 mr-2 space-y-1' : 'space-y-1'}`}>
-              {section.items.map((item) => {
-                const iconName = (item as any).iconName;
-                const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href + '/'));
+      {/* Navigation */}
+      <nav className="flex-1 px-0 py-4 space-y-0.5 overflow-y-auto scrollbar-hide">
+        {navigation.flatMap(s => s.items).map((item) => {
+          const iconName = (item as any).iconName;
+          const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href + '/'));
 
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="block group focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                  >
-                    <div
-                      className={`flex items-center min-h-12 ${isCollapsed ? 'justify-center p-3 my-1' : 'pl-4 pr-3 py-3'} gap-3 transition-colors focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 ${isActive
-                        ? 'text-white bg-[#00a8e8] border-l-4 border-[#008fc4]'
-                        : 'text-[#3A3A3A] dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900'
-                        }`}
-                    >
-                      <FlatIcon
-                        name={iconName}
-                        className={`${isCollapsed ? 'w-6 h-6' : 'w-5 h-5'} shrink-0 ${isActive ? 'text-white' : 'text-[#3A3A3A] dark:text-slate-200'}`}
-                      />
-                      {!isCollapsed && <span className={`sidebar-page-item text-[16px] ${isActive ? 'font-semibold text-white' : 'text-[#3A3A3A] dark:text-slate-200'}`}>{item.label}</span>}
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="block group focus:outline-none"
+            >
+              <div
+                className={`flex items-center min-h-[44px] ${isCollapsed ? 'justify-center p-2' : 'px-5 py-3'} gap-3 rounded-none transition-all duration-200 ${isActive
+                  ? 'bg-[#1f7fe0] text-white shadow-md'
+                  : 'text-[#495057] hover:bg-[#f8f9fa] hover:translate-x-1 dark:text-[#cbd5e1] dark:hover:bg-[#1e293b]'
+                  }`}
+              >
+                <FlatIcon
+                  name={iconName}
+                  className={`${isCollapsed ? 'w-6 h-6' : 'w-[18px] h-[18px]'} shrink-0 ${isActive ? 'text-white' : 'text-[#343a40] dark:text-slate-400'}`}
+                />
+                {!isCollapsed && (
+                  <span className={`text-[14.5px] font-medium tracking-tight ${isActive ? 'text-white' : 'text-[#495057] dark:text-[#cbd5e1]'}`}>
+                    {item.label}
+                  </span>
+                )}
+              </div>
+            </Link>
+          );
+        })}
       </nav>
     </div>
   );

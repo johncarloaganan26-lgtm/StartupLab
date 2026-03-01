@@ -139,7 +139,7 @@ export default function DashboardPage() {
             <div className="text-right hidden md:block">
               <p className="text-[11px] font-semibold text-muted-foreground uppercase">Status</p>
               <div className="flex items-center gap-2 justify-end mt-1">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
                 <span className="text-xs font-semibold text-foreground">Online</span>
               </div>
             </div>
@@ -157,83 +157,83 @@ export default function DashboardPage() {
               <Link
                 key={action.href}
                 href={action.href}
-                className="group border border-border rounded-md p-4 bg-card shadow-sm hover:border-primary/60 transition-colors flex items-center gap-3"
+                className="group border border-border rounded-none p-4 bg-white shadow-sm hover:bg-slate-50 hover:border-[#1f7fe0]/60 transition-all flex items-center gap-4"
               >
-                <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                <div className="w-12 h-12 rounded-none bg-[#1f7fe0]/10 text-[#1f7fe0] flex items-center justify-center border border-[#1f7fe0]/20 shrink-0">
                   {action.icon}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">{action.title}</p>
-                  <p className="text-xs text-muted-foreground truncate">{action.description}</p>
+                  <p className="text-sm font-bold text-[#334155] truncate">{action.title}</p>
+                  <p className="text-[11px] text-[#64748b] truncate uppercase font-semibold tracking-wide">{action.description}</p>
                 </div>
               </Link>
             ))}
           </div>
 
           <div className="grid lg:grid-cols-2 gap-3 items-start">
-            <Card className="border-border h-full">
-              <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between pb-3">
+            <Card className="border-border rounded-none shadow-sm h-full">
+              <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-border bg-slate-50/50">
                 <div>
-                  <CardTitle>Event Calendar</CardTitle>
-                  <p className="text-sm text-muted-foreground">
+                  <CardTitle className="text-lg font-black text-[#334155]">Event Calendar</CardTitle>
+                  <p className="text-[11px] text-[#64748b] uppercase font-bold tracking-tight">
                     Dates with dots have scheduled sessions.
                   </p>
                 </div>
-                <Button variant="outline" size="sm" asChild>
+                <Button variant="excel" size="sm" asChild className="h-9">
                   <Link href="/dashboard/events" className="gap-2 flex items-center">
                     <ListChecks className="w-4 h-4" />
                     View all
                   </Link>
                 </Button>
               </CardHeader>
-              <CardContent className="pt-0 pb-4">
+              <CardContent className="pt-4 pb-4">
                 <Calendar
                   mode="single"
                   selected={selectedDate}
                   onSelect={(day) => day && setSelectedDate(day)}
                   modifiers={{ event: eventDates }}
                   modifiersClassNames={{
-                    event: 'after:content-[""] after:w-1.5 after:h-1.5 after:bg-primary after:rounded-full after:block after:mx-auto after:mt-1',
+                    event: 'after:content-[""] after:w-1.5 after:h-1.5 after:bg-[#1f7fe0] after:rounded-full after:block after:mx-auto after:mt-1',
                   }}
-                  className="w-full min-h-[440px]"
+                  className="w-full min-h-[440px] rounded-none shadow-none border-0"
                 />
               </CardContent>
             </Card>
 
-            <Card className="border-border h-full">
-              <CardHeader className="flex items-center justify-between pb-3">
-                <CardTitle>{selectedDate ? formatPHDate(selectedDate) : 'Select a date'}</CardTitle>
-                <span className="text-xs text-muted-foreground">
+            <Card className="border-border rounded-none shadow-sm h-full">
+              <CardHeader className="flex items-center justify-between pb-3 border-b border-border bg-slate-50/50">
+                <CardTitle className="text-lg font-black text-[#334155]">{selectedDate ? formatPHDate(selectedDate) : 'Select a date'}</CardTitle>
+                <span className="text-[10px] font-black uppercase text-muted-foreground bg-slate-100 px-2 py-0.5 border border-border">
                   {selectedDayEvents.length} {selectedDayEvents.length === 1 ? 'event' : 'events'}
                 </span>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-3 pt-4">
                 {selectedDayEvents.length > 0 ? (
                   <div className="space-y-3">
                     {selectedDayEvents.map((ev) => (
                       <div
                         key={ev.id}
-                        className="border border-border rounded-md p-3 flex flex-col gap-1 bg-card/60"
+                        className="border border-border rounded-none p-3 flex flex-col gap-1 bg-white hover:bg-slate-50 transition-colors shadow-sm"
                       >
                         <div className="flex items-start justify-between gap-2">
-                          <p className="font-semibold text-foreground leading-tight">{ev.title}</p>
-                          <span className="text-[11px] font-semibold uppercase px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/30">
+                          <p className="font-bold text-[#334155] leading-tight">{ev.title}</p>
+                          <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-none bg-blue-50 text-[#1f7fe0] border border-[#1f7fe0]/20">
                             {ev.status ?? 'upcoming'}
                           </span>
                         </div>
-                        <p className="text-sm text-muted-foreground flex items-center gap-2">
-                          <Clock className="w-4 h-4" />
+                        <p className="text-xs text-slate-500 font-medium flex items-center gap-2">
+                          <Clock className="w-3.5 h-3.5 text-[#1f7fe0]" />
                           {ev.time ? formatTime12h(ev.time) : 'Time TBA'}
                         </p>
-                        <p className="text-sm text-muted-foreground flex items-center gap-2">
-                          <MapPin className="w-4 h-4" />
+                        <p className="text-xs text-slate-500 font-medium flex items-center gap-2">
+                          <MapPin className="w-3.5 h-3.5 text-[#1f7fe0]" />
                           {ev.location || 'TBA'}
                         </p>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="border border-dashed border-border rounded-md p-4 text-sm text-muted-foreground text-center">
+                  <div className="border border-dashed border-border rounded-none p-8 text-sm text-muted-foreground text-center bg-slate-50/30">
                     No events scheduled for this date.
                   </div>
                 )}
@@ -242,51 +242,51 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid lg:grid-cols-2 gap-4">
-            <Card className="border-border">
-              <CardHeader>
-                <CardTitle>Upcoming Events</CardTitle>
+            <Card className="border-border rounded-none shadow-sm">
+              <CardHeader className="border-b border-border bg-slate-50/50">
+                <CardTitle className="text-lg font-black text-[#334155]">Upcoming Events</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-3 pt-4">
                 {upcomingEvents.length > 0 ? (
                   upcomingEvents.map((ev) => (
                     <div
                       key={ev.id}
-                      className="border border-border rounded-md p-3 hover:border-primary/50 transition-colors"
+                      className="border border-border rounded-none p-3 hover:bg-slate-50 transition-colors shadow-sm bg-white"
                     >
-                      <p className="text-sm font-semibold text-foreground leading-tight">{ev.title}</p>
-                      <p className="text-xs text-muted-foreground flex items-center gap-2 mt-1">
-                        <CalendarIcon className="w-4 h-4" />
+                      <p className="text-sm font-bold text-[#334155] leading-tight">{ev.title}</p>
+                      <p className="text-xs text-slate-500 font-medium flex items-center gap-2 mt-1">
+                        <CalendarIcon className="w-3.5 h-3.5 text-[#1f7fe0]" />
                         {formatPHDate(ev.dateObj)}
                       </p>
-                      <p className="text-xs text-muted-foreground flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
+                      <p className="text-xs text-slate-500 font-medium flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-[#1f7fe0]" />
                         {ev.time ? formatTime12h(ev.time) : 'Time TBA'}
                       </p>
-                      <p className="text-xs text-muted-foreground flex items-center gap-2">
-                        <MapPin className="w-4 h-4" />
+                      <p className="text-xs text-slate-500 font-medium flex items-center gap-2">
+                        <MapPin className="w-3.5 h-3.5 text-[#1f7fe0]" />
                         {ev.location || 'Location TBA'}
                       </p>
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground">No upcoming events yet.</p>
+                  <div className="py-8 text-sm text-muted-foreground text-center">No upcoming events yet.</div>
                 )}
               </CardContent>
             </Card>
 
-            <Card className="border-border">
-              <CardHeader className="flex items-center justify-between">
-                <CardTitle>Recent Activity</CardTitle>
-                <Link href="/dashboard/audit-logs" className="text-xs font-semibold text-primary hover:underline">
+            <Card className="border-border rounded-none shadow-sm">
+              <CardHeader className="flex items-center justify-between border-b border-border bg-slate-50/50">
+                <CardTitle className="text-lg font-black text-[#334155]">Recent Activity</CardTitle>
+                <Link href="/dashboard/audit-logs" className="text-[11px] font-black uppercase text-[#1f7fe0] hover:underline">
                   View all
                 </Link>
               </CardHeader>
-              <CardContent className="space-y-3 max-h-[360px] overflow-auto">
+              <CardContent className="space-y-3 max-h-[360px] overflow-auto pt-4">
                 {recentActivity.length > 0 ? (
                   recentActivity.map((activity) => {
                     const toneClass =
                       activity.tone === 'success'
-                        ? 'text-green-600'
+                        ? 'text-blue-600'
                         : activity.tone === 'warning'
                           ? 'text-amber-600'
                           : activity.tone === 'danger'
@@ -296,23 +296,28 @@ export default function DashboardPage() {
                               : 'text-muted-foreground';
 
                     return (
-                      <div key={activity.id} className="border border-border rounded-md p-3 space-y-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="text-sm font-semibold text-foreground leading-tight">{activity.summary}</p>
-                          <span className="text-[10px] uppercase px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border">
-                            {activity.action}
-                          </span>
+                      <div key={activity.id} className="border border-border rounded-none p-3 space-y-1 bg-white hover:bg-slate-50 transition-colors shadow-sm flex gap-3">
+                        <div className="w-10 h-10 rounded-none bg-[#1f7fe0]/10 text-[#1f7fe0] flex items-center justify-center shrink-0 border border-[#1f7fe0]/20">
+                          <Activity className="w-4 h-4" />
                         </div>
-                        <p className={`text-xs flex items-center gap-2 ${toneClass}`}>
-                          <Activity className="w-3.5 h-3.5" />
-                          {activity.target}
-                        </p>
-                        <p className="text-[11px] text-muted-foreground">{formatPHDateTime(activity.createdAt)}</p>
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-sm font-bold text-[#334155] leading-tight truncate">{activity.summary}</p>
+                            <span className="text-[10px] uppercase px-2 py-0.5 rounded-none bg-muted text-muted-foreground border border-border font-bold">
+                              {activity.action}
+                            </span>
+                          </div>
+                          <p className={`text-xs flex items-center gap-2 font-bold ${toneClass}`}>
+                            <Activity className="w-3.5 h-3.5" />
+                            {activity.target}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground font-medium">{formatPHDateTime(activity.createdAt)}</p>
+                        </div>
                       </div>
                     );
                   })
                 ) : (
-                  <div className="text-sm text-muted-foreground text-center py-4">No activity yet.</div>
+                  <div className="text-sm text-muted-foreground text-center py-8">No activity yet.</div>
                 )}
               </CardContent>
             </Card>
@@ -325,10 +330,11 @@ export default function DashboardPage() {
 
 function StatPill({ label, value, icon }: { label: string; value: number | string; icon: React.ReactNode }) {
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm shadow-sm">
-      <span className="text-primary">{icon}</span>
-      <span className="font-semibold text-foreground">{value}</span>
-      <span className="text-xs text-muted-foreground">{label}</span>
+    <div className="inline-flex items-center gap-2 rounded-none border border-border bg-white px-3 py-1.5 text-sm shadow-sm ring-1 ring-black/5">
+      <span className="text-[#1f7fe0]">{icon}</span>
+      <span className="font-bold text-[#1a1a1a]">{value}</span>
+      <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{label}</span>
     </div>
   );
 }
+

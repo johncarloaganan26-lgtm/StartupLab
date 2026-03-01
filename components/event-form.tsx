@@ -202,9 +202,9 @@ export function EventForm({ initialData, onSuccess }: EventFormProps) {
 
                 <div className="space-y-2 md:col-span-2">
                     <label className="text-sm font-medium">Event Image</label>
-                    <div className="mt-1 flex flex-col items-center gap-4 p-4 border-2 border-dashed border-border rounded-lg bg-muted/30">
+                    <div className="mt-1 flex flex-col items-center gap-4 p-4 border-2 border-dashed border-border rounded-none bg-muted/30">
                         {imageUrl ? (
-                            <div className="relative w-full aspect-video rounded-md overflow-hidden group">
+                            <div className="relative w-full aspect-video rounded-none overflow-hidden group">
                                 <Image
                                     src={imageUrl}
                                     alt="Event Preview"
@@ -238,8 +238,9 @@ export function EventForm({ initialData, onSuccess }: EventFormProps) {
                         />
                         <Button
                             type="button"
-                            variant="outline"
+                            variant="excel"
                             size="sm"
+                            className="h-9 px-4"
                             disabled={isUploading || isLoading}
                             onClick={() => document.getElementById('event-image-upload')?.click()}
                         >
@@ -250,7 +251,7 @@ export function EventForm({ initialData, onSuccess }: EventFormProps) {
                                 </>
                             ) : (
                                 <>
-                                    <Upload className="w-4 h-4 mr-2" />
+                                    <Upload className="w-4 h-4 mr-2 text-[#616e7c] dark:text-[#9fb0c7]" />
                                     {imageUrl ? 'Change Image' : 'Select Image'}
                                 </>
                             )}
@@ -283,8 +284,9 @@ export function EventForm({ initialData, onSuccess }: EventFormProps) {
             <div className="flex justify-end gap-3 pt-4 border-t">
                 <Button
                     type="button"
-                    variant="outline"
+                    variant="excel"
                     onClick={onSuccess}
+                    className="px-6"
                     disabled={isLoading || isUploading}
                 >
                     Cancel

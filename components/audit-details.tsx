@@ -38,7 +38,7 @@ export function AuditDetails(props: {
 
   const toneBadgeClass =
     tone === 'success'
-      ? 'border-emerald-700 bg-emerald-600 text-white'
+      ? 'border-blue-700 bg-blue-600 text-white'
       : tone === 'info'
       ? 'border-sky-700 bg-sky-600 text-white'
       : tone === 'warning'
@@ -49,7 +49,7 @@ export function AuditDetails(props: {
 
   const toneAccentClass =
     tone === 'success'
-      ? 'border-l-emerald-500 bg-emerald-500/5'
+      ? 'border-l-blue-500 bg-blue-500/5'
       : tone === 'info'
       ? 'border-l-sky-500 bg-sky-500/5'
       : tone === 'warning'

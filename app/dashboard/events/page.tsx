@@ -95,12 +95,14 @@ export default function EventsPage() {
         <div className="space-y-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
-              <h1 className="text-3xl lg:text-4xl font-bold text-foreground">
-                Upcoming Events
-              </h1>
-              <p className="text-muted-foreground mt-2">
-                Discover and register for workshops, networking sessions, and pitch events.
-              </p>
+              <div>
+                <h1 className="text-3xl lg:text-4xl font-black text-foreground uppercase tracking-tight">
+                  Upcoming Events
+                </h1>
+                <p className="text-sm text-muted-foreground mt-2 font-medium italic">
+                  Discover and register for workshops, networking sessions, and pitch events.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -120,8 +122,9 @@ export default function EventsPage() {
                 </p>
                 <div className="flex gap-2">
                   <Button
-                    variant="outline"
+                    variant="excel"
                     size="sm"
+                    className="h-9 px-4 font-bold"
                     onClick={() => {
                       const idsOnPage = paginatedData.map((e) => e.id);
                       setSelectedIds((prev) => Array.from(new Set([...prev, ...idsOnPage])));
@@ -143,9 +146,9 @@ export default function EventsPage() {
               ))}
             </div>
           ) : paginatedData.length === 0 ? (
-            <div className="bg-card border border-border rounded-xl p-16 text-center">
-              <div className="size-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                <Info className="w-8 h-8 text-muted-foreground" />
+            <div className="bg-white border border-border rounded-none p-16 text-center shadow-sm">
+              <div className="size-16 bg-slate-100 rounded-none border border-slate-200 flex items-center justify-center mx-auto mb-4">
+                <Info className="w-8 h-8 text-slate-400" />
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">No events found</h3>
               <p className="text-muted-foreground">
@@ -157,11 +160,12 @@ export default function EventsPage() {
           ) : (
             <>
               {selectedIds.length > 0 && (
-                <div className="rounded-lg border border-border bg-card p-3 flex flex-wrap items-center gap-3 justify-between">
-                  <p className="text-sm font-medium text-foreground">{selectedIds.length} selected</p>
+                <div className="rounded-none border-2 border-[#1f7fe0] bg-white p-3 flex flex-wrap items-center gap-3 justify-between shadow-lg">
+                  <p className="text-xs font-black text-[#1f7fe0] uppercase tracking-widest">{selectedIds.length} Selected</p>
                   <div className="flex gap-2 flex-wrap">
                     <Button
                       size="sm"
+                      className="bg-[#1f7fe0] hover:bg-[#1a6dc4] text-white rounded-none border-b-2 border-[#155ca0] font-black text-[11px] uppercase tracking-wider h-8"
                       onClick={async () => {
                         const selectableIds = selectedIds.filter((id) => {
                           const ev = events.find((e) => e.id === id);
@@ -234,7 +238,7 @@ export default function EventsPage() {
 
         {/* Event Details Modal */}
         <Dialog open={!!selectedEventId} onOpenChange={(open) => { if (!open) { setSelectedEventId(null); setIsDescriptionExpanded(false); } }}>
-          <DialogContent className="max-w-3xl bg-card border-border overflow-hidden p-0 max-h-[90vh] flex flex-col">
+          <DialogContent className="max-w-3xl bg-white border-border rounded-none overflow-hidden p-0 max-h-[90vh] flex flex-col shadow-2xl">
             {selectedEvent && (
               <>
                 <DialogHeader className="sr-only">
@@ -259,9 +263,9 @@ export default function EventsPage() {
                 {/* Quick Info Cards - Always visible, not scrollable */}
                 <div className="p-4 sm:p-6 pb-2 flex-shrink-0 bg-card">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                    <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg border border-border/50">
-                      <div className="size-9 sm:size-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                    <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-none border border-slate-200">
+                      <div className="size-9 rounded-none bg-blue-100 flex items-center justify-center flex-shrink-0 border border-blue-200">
+                        <Calendar className="w-4 h-4 text-blue-700" />
                       </div>
                       <div className="min-w-0">
                         <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Date & Time</p>
@@ -274,9 +278,9 @@ export default function EventsPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg border border-border/50">
-                      <div className="size-9 sm:size-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                    <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-none border border-slate-200">
+                      <div className="size-9 rounded-none bg-blue-100 flex items-center justify-center flex-shrink-0 border border-blue-200">
+                        <MapPin className="w-4 h-4 text-blue-700" />
                       </div>
                       <div className="min-w-0">
                         <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Location</p>
@@ -284,9 +288,9 @@ export default function EventsPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg border border-border/50">
-                      <div className="size-9 sm:size-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Users className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                    <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-none border border-slate-200">
+                      <div className="size-9 rounded-none bg-blue-100 flex items-center justify-center flex-shrink-0 border border-blue-200">
+                        <Users className="w-4 h-4 text-blue-700" />
                       </div>
                       <div className="min-w-0">
                         <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Availability</p>
@@ -324,12 +328,12 @@ export default function EventsPage() {
                 </div>
 
                 {/* Sticky Footer with Register Button */}
-                <DialogFooter className="p-4 sm:p-6 bg-background/95 backdrop-blur-sm border-t border-border mt-0 flex-shrink-0 sticky bottom-0 z-10">
+                <DialogFooter className="p-4 sm:p-6 bg-slate-50/90 backdrop-blur-sm border-t border-border mt-0 flex-shrink-0 sticky bottom-0 z-10 rounded-none">
                   <div className="flex items-center justify-between w-full gap-4">
                     <div className="hidden sm:block">
                       {isAlreadyRegistered && (
-                        <p className="text-sm text-green-600 font-medium flex items-center gap-2">
-                          <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        <p className="text-sm text-blue-600 font-medium flex items-center gap-2">
+                          <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                           You're registered!
                         </p>
                       )}
@@ -364,7 +368,7 @@ export default function EventsPage() {
                               : 'Register Now'}
                         </Button>
                       ) : (
-                        <Button variant="outline" disabled className="flex-1 sm:flex-none cursor-default bg-green-50 border-green-200 text-green-700 hover:bg-green-50 hover:text-green-700">
+                        <Button variant="outline" disabled className="flex-1 sm:flex-none cursor-default bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-700">
                           ✓ Registered
                         </Button>
                       )}
@@ -379,3 +383,4 @@ export default function EventsPage() {
     </AuthGuard >
   );
 }
+

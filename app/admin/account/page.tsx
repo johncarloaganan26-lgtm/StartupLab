@@ -138,7 +138,7 @@ export default function AdminAccountPage() {
     <AuthGuard requiredRole="admin">
       <AdminLayout>
         <div className="p-4 space-y-6 max-w-6xl mx-auto">
-          <div className="flex flex-col gap-1">
+          <div className="admin-page-header flex flex-col gap-1">
             <h1 className="text-3xl lg:text-4xl font-bold text-foreground">Admin Account</h1>
             <p className="text-sm text-muted-foreground">Keep your profile and security details up to date.</p>
           </div>
@@ -178,7 +178,7 @@ export default function AdminAccountPage() {
                     {errorMessage && <Banner tone="error" message={errorMessage} />}
 
                     <div className="flex gap-3 pt-1">
-                      <Button type="submit" disabled={isSaving} className="gap-2">
+                      <Button type="submit" disabled={isSaving} className="gap-2 bg-[#1f7fe0] hover:bg-[#1a6dc4] text-white">
                         {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
                         {isSaving ? 'Saving...' : 'Save Changes'}
                       </Button>
@@ -293,14 +293,15 @@ function InfoTile({ label, value }: { label: string; value: string }) {
 function Banner({ tone, message }: { tone: 'success' | 'error'; message: string }) {
   const styles =
     tone === 'success'
-      ? 'bg-green-50 border border-green-200 text-green-800'
+      ? 'bg-blue-50 border border-blue-200 text-blue-800'
       : 'bg-red-50 border border-red-200 text-red-800';
   const Icon = tone === 'success' ? Check : AlertCircle;
 
   return (
-    <div className={`p-4 rounded-lg flex items-center gap-2 ${styles}`}>
+    <div className={`p-4 rounded-none flex items-center gap-2 ${styles}`}>
       <Icon className="w-5 h-5" />
       <p className="text-sm">{message}</p>
     </div>
   );
 }
+

@@ -49,7 +49,7 @@ export function EventCard({
   }, [event.description, isDescriptionExpanded, variant]);
 
   return (
-    <Card className="group h-full overflow-hidden rounded-2xl py-0 gap-0 bg-card border-border hover:shadow-lg transition-shadow">
+    <Card className="group h-full overflow-hidden rounded-none py-0 gap-0 bg-white border-border hover:shadow-md transition-all">
       <div className="relative h-48 w-full bg-muted sm:h-56">
         <Image
           src={event.image}
@@ -95,12 +95,12 @@ export function EventCard({
         </p>
 
         <div className="mt-4 grid grid-cols-1 gap-2">
-          <div className="flex flex-wrap gap-2 text-xs">
-            <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 text-sky-700 px-2.5 py-1 font-semibold">
-              <Users className="size-3.5" />
+          <div className="flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-tight">
+            <span className="inline-flex items-center gap-1 rounded-none bg-slate-100 text-slate-600 px-2 py-0.5 border border-slate-200">
+              <Users className="size-3" />
               {registrations} registered
             </span>
-            <span className="inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 px-2.5 py-1 font-semibold">
+            <span className="inline-flex items-center rounded-none bg-blue-50 text-blue-700 px-2 py-0.5 border border-blue-100 italic">
               {event.availableSlots} slots left
             </span>
           </div>
@@ -127,7 +127,7 @@ export function EventCard({
           {onRegister ? (
             <Button
               onClick={onRegister}
-              className="w-full"
+              className="w-full rounded-none bg-[#1f7fe0] hover:bg-[#1a6dc4] text-white border-b-4 border-[#155ca0] active:border-b-0 active:translate-y-1 transition-all h-11 font-black text-xs uppercase tracking-widest"
               disabled={isCompleted || event.availableSlots === 0 || disabled}
             >
               {isCompleted

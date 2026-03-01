@@ -127,37 +127,37 @@ export default function AdminSettingsPage() {
     <AuthGuard requiredRole="admin">
       <AdminLayout>
         <div className="max-w-6xl space-y-8">
-          <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="admin-page-header flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h1 className="text-3xl lg:text-4xl font-bold text-foreground">
+              <h1 className="text-3xl lg:text-4xl font-black text-foreground uppercase tracking-tight">
                 Settings
               </h1>
-              <p className="text-muted-foreground mt-2">
+              <p className="text-sm text-muted-foreground mt-2 font-medium italic">
                 Manage system backup and configurations
               </p>
             </div>
           </div>
 
           {error && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-800 text-sm font-medium">
-              <AlertCircle className="w-5 h-5" />
+            <div className="p-4 bg-red-50 border border-red-200 rounded-none flex items-center gap-2 text-red-800 text-sm font-bold shadow-sm">
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
               {error}
             </div>
           )}
 
           <div className="grid gap-6 lg:grid-cols-1">
             {/* System Backup */}
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle>System Backup (.sql)</CardTitle>
-                <CardDescription>
+            <Card className="bg-white border-border rounded-none shadow-sm ring-1 ring-black/5">
+              <CardHeader className="border-b border-border bg-slate-50/50">
+                <CardTitle className="text-lg font-black text-[#334155]">System Backup (.sql)</CardTitle>
+                <CardDescription className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider">
                   Export all system data as SQL backup and import SQL backups for full restore.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <Button onClick={handleExportBackup} disabled={isExporting || isImporting} className="w-full gap-2">
+              <CardContent className="space-y-4 pt-6">
+                <Button onClick={handleExportBackup} disabled={isExporting || isImporting} className="w-full gap-2 bg-[#1f7fe0] hover:bg-[#1a6dc4] text-white rounded-none border-b-4 border-[#155ca0] active:border-b-0 active:translate-y-1 transition-all h-11">
                   {isExporting && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {isExporting ? 'Exporting...' : 'Export'}
+                  <span className="font-black text-xs uppercase tracking-widest">{isExporting ? 'Exporting...' : 'Export System Backup'}</span>
                 </Button>
 
                 <Input
@@ -165,17 +165,17 @@ export default function AdminSettingsPage() {
                   accept=".sql"
                   onChange={(e) => setBackupFile(e.target.files?.[0] || null)}
                   disabled={isImporting || isExporting}
-                  className="w-full"
+                  className="w-full rounded-none h-11 border-slate-200"
                 />
 
                 <Button
-                  variant="outline"
+                  variant="excel"
                   onClick={handleImportBackup}
                   disabled={isImporting || isExporting || !backupFile}
-                  className="w-full gap-2"
+                  className="w-full gap-2 h-11"
                 >
                   {isImporting && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {isImporting ? 'Importing...' : 'Import'}
+                  <span className="font-black text-xs uppercase tracking-widest">{isImporting ? 'Importing...' : 'Import SQL Backup'}</span>
                 </Button>
                 <p className="text-xs text-muted-foreground">
                   Import will restore the uploaded SQL backup and can replace current records.

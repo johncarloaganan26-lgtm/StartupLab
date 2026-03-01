@@ -48,6 +48,9 @@ export async function POST(req: Request) {
 
   const conn = await getDb().getConnection()
   
+  let committed = false
+  const notificationTasks: Promise<unknown>[] = []
+
   try {
     await conn.beginTransaction()
 
@@ -121,7 +124,7 @@ export async function POST(req: Request) {
       }
 
       // Slot releases when leaving confirmed (reject/noshow/delete on confirmed, but not attended)
-      if (action === 'reject' || action === 'noshow' || action === 'delete') {
+      if (action === 'reject' || action === 'noshow') {
         const releasesByEvent: Record<string, number> = {}
         eligible.forEach((row) => {
           if (row.status === 'confirmed') {
@@ -133,7 +136,6 @@ export async function POST(req: Request) {
         }
       }
       
-      const notificationTasks: Promise<any>[] = []
       for (const info of eligible) {
         // Update status
         await conn.execute('UPDATE registrations SET status = ? WHERE id = ?', [newStatus, info.id])
@@ -225,13 +227,22 @@ export async function POST(req: Request) {
     }
 
     await conn.commit()
+    committed = true
     // Send notifications concurrently outside the transaction
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    Promise.allSettled(notificationTasks);
+    if (notificationTasks.length > 0) {
+      Promise.allSettled(notificationTasks)
+    }
 
     return NextResponse.json({ ok: true, processed: eligibleIdsList.length, skipped: skippedIds.length })
   } catch (err: any) {
-    await conn.rollback()
+    if (!committed) {
+      try {
+        await conn.rollback()
+      } catch (rollbackError) {
+        console.error('Bulk registrations rollback failed:', rollbackError)
+      }
+    }
     return NextResponse.json({ error: err.message || 'Bulk action failed' }, { status: 500 })
   } finally {
     conn.release()

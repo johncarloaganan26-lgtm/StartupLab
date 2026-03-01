@@ -1,6 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 
 interface LoadingState {
   isLoading: boolean;
@@ -20,6 +21,8 @@ const LoadingContext = createContext<LoadingContextType | undefined>(undefined);
 export const LoadingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState('Loading...');
+  const pathname = usePathname();
+  const hasInitializedPath = useRef(false);
 
   // Always show a brief loading overlay on hard refresh; clear after mount
   useEffect(() => {
@@ -29,6 +32,25 @@ export const LoadingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }, 600);
     return () => clearTimeout(timer);
   }, []);
+
+  // Show a brief transition loader on client-side route changes.
+  useEffect(() => {
+    if (!pathname) return;
+
+    if (!hasInitializedPath.current) {
+      hasInitializedPath.current = true;
+      return;
+    }
+
+    setIsLoading(true);
+    setLoadingMessage('Loading...');
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      setLoadingMessage('');
+    }, 280);
+
+    return () => clearTimeout(timer);
+  }, [pathname]);
 
   const startLoading = useCallback((message: string = 'Loading...') => {
     setIsLoading(true);

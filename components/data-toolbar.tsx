@@ -26,6 +26,7 @@ export type FilterConfig = {
     options: FilterOption[];
     value: string;
     onChange: (value: string) => void;
+    defaultValue?: string;
 };
 
 type DataToolbarProps = {
@@ -65,40 +66,44 @@ export function DataToolbar({
 }: DataToolbarProps) {
     const hasActiveFilters =
         searchValue.trim() !== '' ||
-        filters.some((f) => f.value !== '' && f.value !== 'all');
+        filters.some((f) => f.value !== (f.defaultValue ?? 'all'));
 
     return (
-        <div className="space-y-4 print:hidden">
-            <div className="flex flex-col xl:flex-row gap-3 items-start xl:items-center">
+        <div className="space-y-3 rounded-sm border border-[#dde2e8] bg-white p-3 print:hidden dark:border-[#334155] dark:bg-[#111827]">
+            <div className="flex flex-col items-start gap-3 xl:flex-row xl:items-center">
                 {/* Search */}
-                <div className="relative flex-1 w-full xl:w-auto">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <div className="relative w-full flex-1 xl:w-auto">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8a99ad] dark:text-[#7f8ea6]" />
                     <Input
                         placeholder={searchPlaceholder}
                         value={searchValue}
                         onChange={(e) => onSearchChange(e.target.value)}
-                        className="pl-9 bg-card"
+                        className="h-10 rounded-sm border-[#d7dde6] bg-white pl-9 pr-9 text-[#1f2d3d] placeholder:text-[#8a99ad] focus-visible:border-[#c4d2e1] focus-visible:ring-1 focus-visible:ring-[#2f5f94]/20 dark:border-[#334155] dark:bg-[#0f172a] dark:text-[#e5edf7] dark:placeholder:text-[#8da0b8]"
                     />
                     {searchValue && (
                         <button
                             onClick={() => onSearchChange('')}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8a99ad] hover:text-[#2f5f94] dark:text-[#8da0b8] dark:hover:text-[#cfe2fb]"
                         >
-                            <X className="w-4 h-4" />
+                            <X className="h-4 w-4" />
                         </button>
                     )}
                 </div>
 
                 {/* Filters */}
-                <div className="flex flex-wrap gap-2 w-full xl:w-auto">
+                <div className="flex w-full flex-wrap gap-2 xl:w-auto">
                     {filters.map((filter) => (
                         <Select key={filter.key} value={filter.value} onValueChange={filter.onChange}>
-                            <SelectTrigger className="w-full sm:w-[160px] bg-card">
+                            <SelectTrigger className="h-10 w-full rounded-none border-[#ced4da] bg-gradient-to-b from-[#fdfdfd] via-[#f8f9fa] to-[#f1f3f5] text-[#495057] shadow-[0_2px_0_0_#dee2e6] hover:from-[#f8f9fa] hover:to-[#e9ecef] hover:border-[#adb5bd] active:shadow-none active:translate-y-[1px] sm:w-[170px] dark:border-[#334155] dark:from-[#111827] dark:to-[#0f172a] dark:text-[#9fb0c7] dark:shadow-[0_2px_0_0_#1e293b]">
                                 <SelectValue placeholder={filter.label} />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="rounded-sm border-[#d7dde6] bg-white text-[#1f2d3d] dark:border-[#334155] dark:bg-[#0f172a] dark:text-[#e5edf7]">
                                 {filter.options.map((opt) => (
-                                    <SelectItem key={opt.value} value={opt.value}>
+                                    <SelectItem
+                                        key={opt.value}
+                                        value={opt.value}
+                                        className="focus:bg-[#eef4fb] focus:text-[#1f2d3d] dark:focus:bg-[#1e293b] dark:focus:text-[#e5edf7]"
+                                    >
                                         {opt.label}
                                     </SelectItem>
                                 ))}
@@ -108,35 +113,54 @@ export function DataToolbar({
 
                     {/* Clear All */}
                     {hasActiveFilters && onClearAll && (
-                        <Button variant="ghost" size="sm" onClick={onClearAll} className="gap-1 text-muted-foreground">
-                            <X className="w-4 h-4" />
+                        <Button
+                            variant="excel"
+                            size="sm"
+                            onClick={onClearAll}
+                            className="h-10 gap-1.5 px-3"
+                        >
+                            <X className="h-4 w-4 text-[#616e7c] dark:text-[#9fb0c7]" />
                             Clear
                         </Button>
                     )}
                 </div>
 
                 {/* Tools (Export, Print, Actions) */}
-                <div className="flex gap-2 w-full xl:w-auto justify-end">
+                <div className="flex w-full justify-end gap-2 xl:w-auto">
                     {onExport && (
-                        <Button variant="outline" size="sm" onClick={onExport} className="gap-2">
-                            <FileDown className="w-4 h-4" />
+                        <Button
+                            variant="excel"
+                            size="sm"
+                            onClick={onExport}
+                            className="h-10 gap-2 px-3"
+                        >
+                            <FileDown className="h-4 w-4 text-[#616e7c] dark:text-[#9fb0c7]" />
                             <span className="hidden sm:inline">Export</span>
                         </Button>
                     )}
                     {onPrint && (
-                        <Button variant="outline" size="sm" onClick={onPrint} className="gap-2">
-                            <Printer className="w-4 h-4" />
+                        <Button
+                            variant="excel"
+                            size="sm"
+                            onClick={onPrint}
+                            className="h-10 gap-2 px-3"
+                        >
+                            <Printer className="h-4 w-4 text-[#616e7c] dark:text-[#9fb0c7]" />
                             <span className="hidden sm:inline">Print</span>
                         </Button>
                     )}
-                    {actions}
+                    {actions && (
+                        <div className="flex items-center gap-2 [&_button]:h-10 [&_button]:rounded-none [&_button]:border [&_button]:border-[#ced4da] [&_button]:bg-gradient-to-b [&_button]:from-[#fdfdfd] [&_button]:via-[#f8f9fa] [&_button]:to-[#f1f3f5] [&_button]:px-3 [&_button]:text-[#495057] [&_button]:shadow-[0_2px_0_0_#dee2e6] [&_button:hover]:from-[#f8f9fa] [&_button:hover]:to-[#e9ecef] [&_button:hover]:text-[#2f5f94] [&_button:active]:translate-y-[1px] [&_button:active]:shadow-none dark:[&_button]:border-[#334155] dark:[&_button]:bg-gradient-to-b dark:[&_button]:from-[#111827] dark:[&_button]:to-[#0f172a] dark:[&_button]:text-[#9fb0c7] dark:[&_button]:shadow-[0_2px_0_0_#1e293b] dark:[&_button:hover]:from-[#1e293b] dark:[&_button:hover]:to-[#0f172a]">
+                            {actions}
+                        </div>
+                    )}
                 </div>
             </div>
 
-            <div className="flex items-center justify-between min-h-[40px]">
+            <div className="flex min-h-[40px] items-center justify-between border-t border-[#e3e8ef] pt-2 dark:border-[#334155]">
                 {/* Result count */}
                 {totalResults !== undefined && (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-[#72849b] dark:text-[#94a3b8]">
                         {totalResults} {totalResults === 1 ? resultLabel.replace(/s$/, '') : resultLabel}
                         {hasActiveFilters && ' (filtered)'}
                     </p>
@@ -144,8 +168,8 @@ export function DataToolbar({
 
                 {/* Bulk Selection Bar */}
                 {selectedCount > 0 && (
-                    <div className="flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
-                        <span className="text-sm font-medium text-primary">
+                    <div className="animate-in fade-in slide-in-from-top-1 flex items-center gap-2">
+                        <span className="text-sm font-medium text-[#2f5f94] dark:text-[#78b2f4]">
                             {selectedCount}
                         </span>
                         {onBulkDelete && (
@@ -156,7 +180,7 @@ export function DataToolbar({
                                 className="h-8 w-8"
                                 title="Delete Selected"
                             >
-                                <Trash2 className="w-4 h-4" />
+                                <Trash2 className="h-4 w-4" />
                             </Button>
                         )}
                     </div>
@@ -192,17 +216,18 @@ export function DataPagination({
 
     return (
         <div className="flex items-center justify-between pt-4">
-            <p className="text-sm text-muted-foreground">
-                Showing {start}–{end} of {totalItems}
+            <p className="text-sm text-[#72849b] dark:text-[#94a3b8]">
+                Showing {start}-{end} of {totalItems}
             </p>
             <div className="flex items-center gap-2">
                 <Button
-                    variant="outline"
+                    variant="excel"
                     size="sm"
                     disabled={currentPage <= 1}
                     onClick={() => onPageChange(currentPage - 1)}
+                    className="h-9 px-2"
                 >
-                    <ChevronLeft className="w-4 h-4" />
+                    <ChevronLeft className="h-4 w-4 text-[#616e7c] dark:text-[#9fb0c7]" />
                 </Button>
 
                 {Array.from({ length: totalPages }, (_, i) => i + 1)
@@ -217,13 +242,16 @@ export function DataPagination({
                         return (
                             <span key={page} className="flex items-center gap-1">
                                 {showEllipsis && (
-                                    <span className="px-1 text-sm text-muted-foreground">…</span>
+                                    <span className="px-1 text-sm text-[#8a99ad] dark:text-[#8da0b8]">...</span>
                                 )}
                                 <Button
-                                    variant={page === currentPage ? 'default' : 'outline'}
+                                    variant={page === currentPage ? 'default' : 'excel'}
                                     size="sm"
                                     onClick={() => onPageChange(page)}
-                                    className="min-w-[36px]"
+                                    className={`min-w-[36px] h-9 ${page === currentPage
+                                        ? ''
+                                        : 'px-2'
+                                        }`}
                                 >
                                     {page}
                                 </Button>
@@ -232,12 +260,13 @@ export function DataPagination({
                     })}
 
                 <Button
-                    variant="outline"
+                    variant="excel"
                     size="sm"
                     disabled={currentPage >= totalPages}
                     onClick={() => onPageChange(currentPage + 1)}
+                    className="h-9 px-2"
                 >
-                    <ChevronRight className="w-4 h-4" />
+                    <ChevronRight className="h-4 w-4 text-[#616e7c] dark:text-[#9fb0c7]" />
                 </Button>
             </div>
         </div>

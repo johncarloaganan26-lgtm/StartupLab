@@ -663,16 +663,17 @@ export default function AdminArchivePage() {
     <AuthGuard requiredRole="admin">
       <AdminLayout>
         <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl lg:text-4xl font-bold text-foreground">Archive</h1>
-            <p className="text-muted-foreground mt-2">Use one archive table with categories for events, registrations, and users.</p>
+          <div className="admin-page-header">
+            <h1 className="text-3xl lg:text-4xl font-black text-foreground uppercase tracking-tight">Archive</h1>
+            <p className="text-sm text-muted-foreground mt-2 font-medium italic">Use one archive table with categories for events, registrations, and users.</p>
           </div>
 
-          <div className="inline-flex rounded-lg border border-border bg-card p-1">
+          <div className="inline-flex rounded-none border border-border bg-card p-1">
             <Button
               size="sm"
               variant={category === 'events' ? 'default' : 'ghost'}
               onClick={() => setCategory('events')}
+              className={category === 'events' ? 'bg-[#1f7fe0] hover:bg-[#1a6dc4] text-white rounded-none' : 'rounded-none'}
             >
               Events
             </Button>
@@ -680,6 +681,7 @@ export default function AdminArchivePage() {
               size="sm"
               variant={category === 'registrations' ? 'default' : 'ghost'}
               onClick={() => setCategory('registrations')}
+              className={category === 'registrations' ? 'bg-[#1f7fe0] hover:bg-[#1a6dc4] text-white rounded-none' : 'rounded-none'}
             >
               Registrations
             </Button>
@@ -687,6 +689,7 @@ export default function AdminArchivePage() {
               size="sm"
               variant={category === 'users' ? 'default' : 'ghost'}
               onClick={() => setCategory('users')}
+              className={category === 'users' ? 'bg-[#1f7fe0] hover:bg-[#1a6dc4] text-white rounded-none' : 'rounded-none'}
             >
               Users
             </Button>
@@ -725,54 +728,57 @@ export default function AdminArchivePage() {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto bg-card border border-border rounded-lg">
+              <div className="overflow-x-auto bg-card border border-border rounded-none">
                 <table className="w-full">
                   <thead>
                     {category === 'events' && (
-                      <tr className="border-b border-border bg-muted/50 text-left">
-                        <th className="px-6 py-3 w-12 text-center">
+                      <tr className="border-b border-slate-200 bg-slate-50/80 text-left">
+                        <th className="px-6 py-4 w-12 text-center">
                           <Checkbox
                             checked={selectedIds.length === paginatedEvents.length && paginatedEvents.length > 0}
                             onCheckedChange={handleSelectAllCurrent}
+                            className="rounded-none border-slate-300"
                           />
                         </th>
-                        <th className="px-6 py-3 text-sm font-semibold text-foreground">Event</th>
-                        <th className="px-6 py-3 text-sm font-semibold text-foreground">Date & Time</th>
-                        <th className="px-6 py-3 text-sm font-semibold text-foreground">Archived On</th>
-                        <th className="px-6 py-3 text-right text-sm font-semibold text-foreground">Actions</th>
+                        <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Event</th>
+                        <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Date & Time</th>
+                        <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Archived On</th>
+                        <th className="px-6 py-4 text-right text-[11px] font-black text-slate-500 uppercase tracking-widest">Actions</th>
                       </tr>
                     )}
                     {category === 'registrations' && (
-                      <tr className="border-b border-border bg-muted/50 text-left">
-                        <th className="px-6 py-3 w-12 text-center">
+                      <tr className="border-b border-slate-200 bg-slate-50/80 text-left">
+                        <th className="px-6 py-4 w-12 text-center">
                           <Checkbox
                             checked={selectedIds.length === paginatedArchivedRegistrations.length && paginatedArchivedRegistrations.length > 0}
                             onCheckedChange={handleSelectAllCurrent}
+                            className="rounded-none border-slate-300"
                           />
                         </th>
-                        <th className="px-6 py-3 text-sm font-semibold text-foreground">Attendee</th>
-                        <th className="px-6 py-3 text-sm font-semibold text-foreground">Event</th>
-                        <th className="px-6 py-3 text-sm font-semibold text-foreground">Last Status</th>
-                        <th className="px-6 py-3 text-sm font-semibold text-foreground">Registered On</th>
-                        <th className="px-6 py-3 text-sm font-semibold text-foreground">Archived On</th>
-                        <th className="px-6 py-3 text-sm font-semibold text-foreground">Source</th>
-                        <th className="px-6 py-3 text-right text-sm font-semibold text-foreground">Actions</th>
+                        <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Attendee</th>
+                        <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Event</th>
+                        <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Last Status</th>
+                        <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Registered On</th>
+                        <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Archived On</th>
+                        <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Source</th>
+                        <th className="px-6 py-4 text-right text-[11px] font-black text-slate-500 uppercase tracking-widest">Actions</th>
                       </tr>
                     )}
                     {category === 'users' && (
-                      <tr className="border-b border-border bg-muted/50 text-left">
-                        <th className="px-6 py-3 w-12 text-center">
+                      <tr className="border-b border-slate-200 bg-slate-50/80 text-left">
+                        <th className="px-6 py-4 w-12 text-center">
                           <Checkbox
                             checked={selectedIds.length === paginatedArchivedUsers.length && paginatedArchivedUsers.length > 0}
                             onCheckedChange={handleSelectAllCurrent}
+                            className="rounded-none border-slate-300"
                           />
                         </th>
-                        <th className="px-6 py-3 text-sm font-semibold text-foreground">Name</th>
-                        <th className="px-6 py-3 text-sm font-semibold text-foreground">Email</th>
-                        <th className="px-6 py-3 text-sm font-semibold text-foreground">Role</th>
-                        <th className="px-6 py-3 text-sm font-semibold text-foreground">Deleted On</th>
-                        <th className="px-6 py-3 text-sm font-semibold text-foreground">Source</th>
-                        <th className="px-6 py-3 text-right text-sm font-semibold text-foreground">Actions</th>
+                        <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Name</th>
+                        <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Email</th>
+                        <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Role</th>
+                        <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Deleted On</th>
+                        <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Source</th>
+                        <th className="px-6 py-4 text-right text-[11px] font-black text-slate-500 uppercase tracking-widest">Actions</th>
                       </tr>
                     )}
                   </thead>
@@ -1002,12 +1008,12 @@ export default function AdminArchivePage() {
             </DialogHeader>
             <div className="overflow-y-auto flex-1 pr-2 min-h-0">
               {selectedArchivedEvent?.image && (
-                <div className="relative w-full h-48 sm:h-64 rounded-lg overflow-hidden border border-border mb-4 flex-shrink-0">
+                <div className="relative w-full h-48 sm:h-64 rounded-none overflow-hidden border border-border mb-4 flex-shrink-0">
                   <img src={selectedArchivedEvent.image} alt="" className="w-full h-full object-cover" />
                 </div>
               )}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm mb-4">
-                <div className="bg-muted/30 p-3 rounded-lg">
+                <div className="bg-muted/30 p-3 rounded-none">
                   <p className="text-muted-foreground uppercase text-[10px] font-bold">Schedule</p>
                   <p className="font-medium text-foreground">
                     {selectedArchivedEvent && formatPHDate(selectedArchivedEvent.date)}
@@ -1016,11 +1022,11 @@ export default function AdminArchivePage() {
                     {selectedArchivedEvent && formatTime12h(selectedArchivedEvent.time)}
                   </p>
                 </div>
-                <div className="bg-muted/30 p-3 rounded-lg">
+                <div className="bg-muted/30 p-3 rounded-none">
                   <p className="text-muted-foreground uppercase text-[10px] font-bold">Location</p>
                   <p className="font-medium text-foreground">{selectedArchivedEvent?.location}</p>
                 </div>
-                <div className="bg-muted/30 p-3 rounded-lg">
+                <div className="bg-muted/30 p-3 rounded-none">
                   <p className="text-muted-foreground uppercase text-[10px] font-bold">Archived On</p>
                   <p className="font-medium text-foreground">
                     {selectedArchivedEvent?.archivedAt ? new Date(selectedArchivedEvent.archivedAt).toLocaleDateString() : '-'}
@@ -1029,7 +1035,7 @@ export default function AdminArchivePage() {
                     {selectedArchivedEvent?.archivedAt ? new Date(selectedArchivedEvent.archivedAt).toLocaleTimeString() : '-'}
                   </p>
                 </div>
-                <div className="bg-muted/30 p-3 rounded-lg">
+                <div className="bg-muted/30 p-3 rounded-none">
                   <p className="text-muted-foreground uppercase text-[10px] font-bold">Event ID</p>
                   <p className="font-medium text-foreground font-mono text-xs">{selectedArchivedEvent?.id}</p>
                 </div>
@@ -1038,9 +1044,8 @@ export default function AdminArchivePage() {
                 <p className="text-muted-foreground uppercase text-[10px] font-bold mb-2">Description</p>
                 <div className="relative">
                   <div
-                    className={`text-sm text-foreground whitespace-pre-wrap leading-relaxed p-4 bg-muted/20 rounded-lg border border-border/50 ${
-                      !isDescriptionExpanded ? 'max-h-48 overflow-hidden' : ''
-                    }`}
+                    className={`text-sm text-foreground whitespace-pre-wrap leading-relaxed p-4 bg-muted/20 rounded-none border border-border/50 ${!isDescriptionExpanded ? 'max-h-48 overflow-hidden' : ''
+                      }`}
                   >
                     {selectedArchivedEvent?.description || 'No description provided.'}
                   </div>
@@ -1081,20 +1086,20 @@ export default function AdminArchivePage() {
               <DialogTitle className="text-xl font-bold">Archived Registration Details</DialogTitle>
             </DialogHeader>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-              <div className="bg-muted/30 p-3 rounded-lg">
+              <div className="bg-muted/30 p-3 rounded-none">
                 <p className="text-muted-foreground uppercase text-[10px] font-bold">Archive Row ID</p>
                 <p className="font-medium text-foreground font-mono text-xs">{selectedArchivedRegistration?.id || '-'}</p>
               </div>
-              <div className="bg-muted/30 p-3 rounded-lg">
+              <div className="bg-muted/30 p-3 rounded-none">
                 <p className="text-muted-foreground uppercase text-[10px] font-bold">Original Registration ID</p>
                 <p className="font-medium text-foreground">{selectedArchivedRegistration?.registrationId || '-'}</p>
               </div>
-              <div className="bg-muted/30 p-3 rounded-lg">
+              <div className="bg-muted/30 p-3 rounded-none">
                 <p className="text-muted-foreground uppercase text-[10px] font-bold">Attendee</p>
                 <p className="font-medium text-foreground">{selectedArchivedRegistration?.userName || 'Unknown User'}</p>
                 <p className="text-muted-foreground text-xs break-all">{selectedArchivedRegistration?.userEmail || '-'}</p>
               </div>
-              <div className="bg-muted/30 p-3 rounded-lg">
+              <div className="bg-muted/30 p-3 rounded-none">
                 <p className="text-muted-foreground uppercase text-[10px] font-bold">Event</p>
                 <p className="font-medium text-foreground">{selectedArchivedRegistration?.eventTitle || 'Unknown Event'}</p>
                 <p className="text-muted-foreground text-xs">
@@ -1102,11 +1107,11 @@ export default function AdminArchivePage() {
                   {selectedArchivedRegistration?.eventTime ? `, ${formatTime12h(selectedArchivedRegistration.eventTime)}` : ''}
                 </p>
               </div>
-              <div className="bg-muted/30 p-3 rounded-lg">
+              <div className="bg-muted/30 p-3 rounded-none">
                 <p className="text-muted-foreground uppercase text-[10px] font-bold">Status</p>
                 <p className="font-medium text-foreground">{selectedArchivedRegistration?.status || 'unknown'}</p>
               </div>
-              <div className="bg-muted/30 p-3 rounded-lg">
+              <div className="bg-muted/30 p-3 rounded-none">
                 <p className="text-muted-foreground uppercase text-[10px] font-bold">Registered On</p>
                 <p className="font-medium text-foreground">
                   {selectedArchivedRegistration?.registeredAt
@@ -1114,7 +1119,7 @@ export default function AdminArchivePage() {
                     : '-'}
                 </p>
               </div>
-              <div className="bg-muted/30 p-3 rounded-lg">
+              <div className="bg-muted/30 p-3 rounded-none">
                 <p className="text-muted-foreground uppercase text-[10px] font-bold">Archived On</p>
                 <p className="font-medium text-foreground">
                   {selectedArchivedRegistration?.deletedAt
@@ -1122,7 +1127,7 @@ export default function AdminArchivePage() {
                     : '-'}
                 </p>
               </div>
-              <div className="bg-muted/30 p-3 rounded-lg">
+              <div className="bg-muted/30 p-3 rounded-none">
                 <p className="text-muted-foreground uppercase text-[10px] font-bold">Deletion Source</p>
                 <p className="font-medium text-foreground">{selectedArchivedRegistration?.deletionSource || '-'}</p>
               </div>
@@ -1143,27 +1148,27 @@ export default function AdminArchivePage() {
               <DialogTitle className="text-xl font-bold">Archived User Details</DialogTitle>
             </DialogHeader>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-              <div className="bg-muted/30 p-3 rounded-lg">
+              <div className="bg-muted/30 p-3 rounded-none">
                 <p className="text-muted-foreground uppercase text-[10px] font-bold">Archive Row ID</p>
                 <p className="font-medium text-foreground font-mono text-xs">{selectedArchivedUser?.id || '-'}</p>
               </div>
-              <div className="bg-muted/30 p-3 rounded-lg">
+              <div className="bg-muted/30 p-3 rounded-none">
                 <p className="text-muted-foreground uppercase text-[10px] font-bold">Original User ID</p>
                 <p className="font-medium text-foreground">{selectedArchivedUser?.userId || '-'}</p>
               </div>
-              <div className="bg-muted/30 p-3 rounded-lg">
+              <div className="bg-muted/30 p-3 rounded-none">
                 <p className="text-muted-foreground uppercase text-[10px] font-bold">Name</p>
                 <p className="font-medium text-foreground">{selectedArchivedUser?.name || 'Unknown User'}</p>
               </div>
-              <div className="bg-muted/30 p-3 rounded-lg">
+              <div className="bg-muted/30 p-3 rounded-none">
                 <p className="text-muted-foreground uppercase text-[10px] font-bold">Email</p>
                 <p className="font-medium text-foreground break-all">{selectedArchivedUser?.email || '-'}</p>
               </div>
-              <div className="bg-muted/30 p-3 rounded-lg">
+              <div className="bg-muted/30 p-3 rounded-none">
                 <p className="text-muted-foreground uppercase text-[10px] font-bold">Role</p>
                 <p className="font-medium text-foreground">{selectedArchivedUser?.role || 'unknown'}</p>
               </div>
-              <div className="bg-muted/30 p-3 rounded-lg">
+              <div className="bg-muted/30 p-3 rounded-none">
                 <p className="text-muted-foreground uppercase text-[10px] font-bold">Created On</p>
                 <p className="font-medium text-foreground">
                   {selectedArchivedUser?.createdAtOriginal
@@ -1171,19 +1176,19 @@ export default function AdminArchivePage() {
                     : '-'}
                 </p>
               </div>
-              <div className="bg-muted/30 p-3 rounded-lg">
+              <div className="bg-muted/30 p-3 rounded-none">
                 <p className="text-muted-foreground uppercase text-[10px] font-bold">Company</p>
                 <p className="font-medium text-foreground">{selectedArchivedUser?.company || '-'}</p>
               </div>
-              <div className="bg-muted/30 p-3 rounded-lg">
+              <div className="bg-muted/30 p-3 rounded-none">
                 <p className="text-muted-foreground uppercase text-[10px] font-bold">Phone</p>
                 <p className="font-medium text-foreground">{selectedArchivedUser?.phone || '-'}</p>
               </div>
-              <div className="bg-muted/30 p-3 rounded-lg sm:col-span-2">
+              <div className="bg-muted/30 p-3 rounded-none sm:col-span-2">
                 <p className="text-muted-foreground uppercase text-[10px] font-bold">Bio</p>
                 <p className="font-medium text-foreground whitespace-pre-wrap">{selectedArchivedUser?.bio || '-'}</p>
               </div>
-              <div className="bg-muted/30 p-3 rounded-lg">
+              <div className="bg-muted/30 p-3 rounded-none">
                 <p className="text-muted-foreground uppercase text-[10px] font-bold">Archived On</p>
                 <p className="font-medium text-foreground">
                   {selectedArchivedUser?.deletedAt
@@ -1191,7 +1196,7 @@ export default function AdminArchivePage() {
                     : '-'}
                 </p>
               </div>
-              <div className="bg-muted/30 p-3 rounded-lg">
+              <div className="bg-muted/30 p-3 rounded-none">
                 <p className="text-muted-foreground uppercase text-[10px] font-bold">Deletion Source</p>
                 <p className="font-medium text-foreground">{selectedArchivedUser?.deletionSource || '-'}</p>
               </div>

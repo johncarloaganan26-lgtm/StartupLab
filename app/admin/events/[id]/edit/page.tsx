@@ -118,7 +118,7 @@ export default function EditEventPage() {
   if (!event) {
     return (
       <AdminLayout>
-        <div className="bg-card border border-border rounded-lg p-8 text-center">
+        <div className="bg-card border border-border rounded-none p-8 text-center">
           <p className="text-foreground font-medium mb-4">Event not found</p>
           <Button onClick={() => router.back()}>Go Back</Button>
         </div>
@@ -130,188 +130,188 @@ export default function EditEventPage() {
     <AuthGuard requiredRole="admin">
       <AdminLayout>
         <div className="max-w-2xl space-y-8">
-        <div>
-          <h1 className="text-3xl lg:text-4xl font-bold text-foreground">
-            Edit Event
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Update event details and information
-          </p>
-        </div>
+          <div className="admin-page-header">
+            <h1 className="text-3xl lg:text-4xl font-bold text-foreground">
+              Edit Event
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Update event details and information
+            </p>
+          </div>
 
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle>Event Details</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              <div>
-                <label htmlFor="title" className="block text-sm font-medium text-foreground mb-2">
-                  Event Title
-                </label>
-                <Input
-                  id="title"
-                  placeholder="Startup Pitch Night"
-                  {...register('title')}
-                  disabled={isLoading}
-                  className="w-full"
-                />
-                {errors.title && (
-                  <p className="text-sm text-destructive mt-1">{errors.title.message}</p>
-                )}
-              </div>
-
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium text-foreground mb-2">
-                  Description
-                </label>
-                <Input
-                  id="description"
-                  placeholder="Describe your event..."
-                  {...register('description')}
-                  disabled={isLoading}
-                  className="w-full"
-                />
-                {errors.description && (
-                  <p className="text-sm text-destructive mt-1">{errors.description.message}</p>
-                )}
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-4">
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle>Event Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <div>
-                  <label htmlFor="date" className="block text-sm font-medium text-foreground mb-2">
-                    Date
+                  <label htmlFor="title" className="block text-sm font-medium text-foreground mb-2">
+                    Event Title
                   </label>
                   <Input
-                    id="date"
-                    type="date"
-                    {...register('date')}
+                    id="title"
+                    placeholder="Startup Pitch Night"
+                    {...register('title')}
                     disabled={isLoading}
                     className="w-full"
                   />
-                  {errors.date && (
-                    <p className="text-sm text-destructive mt-1">{errors.date.message}</p>
+                  {errors.title && (
+                    <p className="text-sm text-destructive mt-1">{errors.title.message}</p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="time" className="block text-sm font-medium text-foreground mb-2">
-                    Time
+                  <label htmlFor="description" className="block text-sm font-medium text-foreground mb-2">
+                    Description
                   </label>
                   <Input
-                    id="time"
-                    type="time"
-                    {...register('time')}
+                    id="description"
+                    placeholder="Describe your event..."
+                    {...register('description')}
                     disabled={isLoading}
                     className="w-full"
                   />
-                  {errors.time && (
-                    <p className="text-sm text-destructive mt-1">{errors.time.message}</p>
+                  {errors.description && (
+                    <p className="text-sm text-destructive mt-1">{errors.description.message}</p>
                   )}
                 </div>
-              </div>
 
-              <div>
-                <label htmlFor="location" className="block text-sm font-medium text-foreground mb-2">
-                  Location
-                </label>
-                <Input
-                  id="location"
-                  placeholder="Innovation Hub, Downtown"
-                  {...register('location')}
-                  disabled={isLoading}
-                  className="w-full"
-                />
-                {errors.location && (
-                  <p className="text-sm text-destructive mt-1">{errors.location.message}</p>
-                )}
-              </div>
-
-              <div>
-                <label htmlFor="totalSlots" className="block text-sm font-medium text-foreground mb-2">
-                  Total Slots
-                </label>
-                <Input
-                  id="totalSlots"
-                  type="number"
-                  placeholder="100"
-                  {...register('totalSlots')}
-                  disabled={isLoading}
-                  className="w-full"
-                />
-                {errors.totalSlots && (
-                  <p className="text-sm text-destructive mt-1">{errors.totalSlots.message}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Event Image
-                </label>
-                <div className="flex items-center gap-4">
-                  <div className="relative h-20 w-32 overflow-hidden rounded-md border border-border bg-muted">
-                    <Image src={imagePreview} alt="" fill className="object-cover" />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      id="event-image-edit"
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      disabled={isLoading || isUploadingImage}
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        try {
-                          setIsUploadingImage(true);
-                          const uploadedPath = await uploadImage(file);
-                          setValue('image', uploadedPath, { shouldDirty: true });
-                        } catch (err) {
-                          toastError('Upload failed', err instanceof Error ? err.message : 'Upload failed.');
-                        } finally {
-                          setIsUploadingImage(false);
-                          e.target.value = '';
-                        }
-                      }}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="date" className="block text-sm font-medium text-foreground mb-2">
+                      Date
+                    </label>
+                    <Input
+                      id="date"
+                      type="date"
+                      {...register('date')}
+                      disabled={isLoading}
+                      className="w-full"
                     />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={isLoading || isUploadingImage}
-                      className="gap-2"
-                      asChild
-                    >
-                      <label htmlFor="event-image-edit" className="cursor-pointer">
-                        {isUploadingImage && <Loader2 className="w-4 h-4 animate-spin" />}
-                        {isUploadingImage ? 'Uploading...' : 'Upload Image'}
-                      </label>
-                    </Button>
-                    <input type="hidden" {...register('image')} />
+                    {errors.date && (
+                      <p className="text-sm text-destructive mt-1">{errors.date.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="time" className="block text-sm font-medium text-foreground mb-2">
+                      Time
+                    </label>
+                    <Input
+                      id="time"
+                      type="time"
+                      {...register('time')}
+                      disabled={isLoading}
+                      className="w-full"
+                    />
+                    {errors.time && (
+                      <p className="text-sm text-destructive mt-1">{errors.time.message}</p>
+                    )}
                   </div>
                 </div>
-              </div>
 
-              <div className="flex gap-3 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => router.back()}
-                  disabled={isLoading}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="gap-2"
-                >
-                  {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {isLoading ? 'Saving...' : 'Save Changes'}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+                <div>
+                  <label htmlFor="location" className="block text-sm font-medium text-foreground mb-2">
+                    Location
+                  </label>
+                  <Input
+                    id="location"
+                    placeholder="Innovation Hub, Downtown"
+                    {...register('location')}
+                    disabled={isLoading}
+                    className="w-full"
+                  />
+                  {errors.location && (
+                    <p className="text-sm text-destructive mt-1">{errors.location.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="totalSlots" className="block text-sm font-medium text-foreground mb-2">
+                    Total Slots
+                  </label>
+                  <Input
+                    id="totalSlots"
+                    type="number"
+                    placeholder="100"
+                    {...register('totalSlots')}
+                    disabled={isLoading}
+                    className="w-full"
+                  />
+                  {errors.totalSlots && (
+                    <p className="text-sm text-destructive mt-1">{errors.totalSlots.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Event Image
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <div className="relative h-20 w-32 overflow-hidden rounded-md border border-border bg-muted">
+                      <Image src={imagePreview} alt="" fill className="object-cover" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        id="event-image-edit"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={isLoading || isUploadingImage}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          try {
+                            setIsUploadingImage(true);
+                            const uploadedPath = await uploadImage(file);
+                            setValue('image', uploadedPath, { shouldDirty: true });
+                          } catch (err) {
+                            toastError('Upload failed', err instanceof Error ? err.message : 'Upload failed.');
+                          } finally {
+                            setIsUploadingImage(false);
+                            e.target.value = '';
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={isLoading || isUploadingImage}
+                        className="gap-2"
+                        asChild
+                      >
+                        <label htmlFor="event-image-edit" className="cursor-pointer">
+                          {isUploadingImage && <Loader2 className="w-4 h-4 animate-spin" />}
+                          {isUploadingImage ? 'Uploading...' : 'Upload Image'}
+                        </label>
+                      </Button>
+                      <input type="hidden" {...register('image')} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => router.back()}
+                    disabled={isLoading}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="gap-2 bg-[#1f7fe0] hover:bg-[#1a6dc4] text-white"
+                  >
+                    {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {isLoading ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
         </div>
       </AdminLayout>
     </AuthGuard>

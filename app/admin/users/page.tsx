@@ -131,6 +131,7 @@ export default function AdminUsersPage() {
       label: 'Role',
       value: roleFilter,
       onChange: setRoleFilter,
+      defaultValue: 'all',
       options: [
         { label: 'All Roles', value: 'all' },
         { label: 'Attendee', value: 'attendee' },
@@ -142,6 +143,7 @@ export default function AdminUsersPage() {
       label: 'Sort',
       value: sortBy,
       onChange: setSortBy,
+      defaultValue: 'newest',
       options: [
         { label: 'Newest First', value: 'newest' },
         { label: 'Name A-Z', value: 'name-asc' },
@@ -265,13 +267,13 @@ export default function AdminUsersPage() {
     <AuthGuard requiredRole="admin">
       <AdminLayout>
         <div className="space-y-6">
-          <div className="flex justify-between items-end">
+          <div className="admin-page-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl lg:text-4xl font-bold text-foreground">
-                User Management
+              <h1 className="text-3xl lg:text-4xl font-black text-foreground uppercase tracking-tight">
+                Manage Users
               </h1>
-              <p className="text-muted-foreground mt-2">
-                View and manage registered users in a table view
+              <p className="text-sm text-muted-foreground mt-2 font-medium italic">
+                View and manage registered users.
               </p>
             </div>
           </div>
@@ -297,48 +299,57 @@ export default function AdminUsersPage() {
               <Loader2 className="w-6 h-6 animate-spin text-primary" />
             </div>
           ) : error ? (
-            <div className="bg-card border border-border rounded-lg p-6 text-center">
+            <div className="bg-card border border-border rounded-none p-6 text-center">
               <p className="text-sm text-destructive">{error}</p>
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto bg-card border border-border rounded-lg">
+              <div className="overflow-x-auto bg-card border border-border rounded-none">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-border bg-muted/50">
-                      <th className="px-6 py-3 text-left w-12">
+                    <tr className="border-b border-slate-200 bg-slate-50/80 text-left">
+                      <th className="px-6 py-4 text-left w-12">
                         <Checkbox
                           checked={selectedIds.length === paginatedData.length && paginatedData.length > 0}
                           onCheckedChange={handleSelectAll}
+                          className="rounded-none border-slate-300"
                         />
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Name</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Email</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-foreground text-center">Role</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-foreground text-center">Events</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Last Activity</th>
-                      <th className="px-6 py-3 text-right text-sm font-semibold text-foreground">Actions</th>
+                      <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest text-left">Name</th>
+                      <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest text-left">Email</th>
+                      <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">Role</th>
+                      <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">Events</th>
+                      <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest text-left">Last Activity</th>
+                      <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-border">
                     {paginatedData.map((user) => (
-                      <tr key={user.id} className="border-b border-border hover:bg-muted/30 transition-colors">
+                      <tr key={user.id} className="hover:bg-muted/30 transition-colors">
                         <td className="px-6 py-4">
                           <Checkbox
                             checked={selectedIds.includes(user.id)}
                             onCheckedChange={(checked) => handleSelectOne(user.id, !!checked)}
                           />
                         </td>
-                        <td className="px-6 py-4 font-medium text-foreground">{user.name}</td>
+                        <td className="px-6 py-4">
+                          <p className="font-medium text-foreground">{user.name}</p>
+                          <p className="text-xs text-muted-foreground">ID: {user.id.slice(0, 8)}</p>
+                        </td>
                         <td className="px-6 py-4 text-sm text-muted-foreground">{user.email}</td>
                         <td className="px-6 py-4 text-center">
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                          <span
+                            className={`px-2 py-0.5 rounded-none text-[10px] font-black uppercase tracking-wider ${user.role === 'admin' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-700'
+                              }`}
+                          >
                             {user.role}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-center font-bold text-primary">{user.eventCount}</td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-sm font-medium text-foreground">{user.eventCount}</span>
+                        </td>
                         <td className="px-6 py-4 text-sm text-muted-foreground">
-                          {user.lastRegistered ? new Date(user.lastRegistered).toLocaleDateString() : 'None'}
+                          {user.lastRegistered ? new Date(user.lastRegistered).toLocaleString() : 'None'}
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex justify-end gap-2">
@@ -365,6 +376,13 @@ export default function AdminUsersPage() {
                         </td>
                       </tr>
                     ))}
+                    {paginatedData.length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
+                          No users found.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -407,7 +425,7 @@ export default function AdminUsersPage() {
               <Button variant="outline" onClick={() => setEditingUser(null)} disabled={isUpdating}>
                 Cancel
               </Button>
-              <Button onClick={handleUpdateRole} disabled={isUpdating} className="bg-primary hover:bg-primary/90">
+              <Button onClick={handleUpdateRole} disabled={isUpdating} className="bg-[#1f7fe0] hover:bg-[#1a6dc4] text-white">
                 {isUpdating ? 'Updating...' : 'Save Changes'}
               </Button>
             </DialogFooter>
@@ -417,3 +435,4 @@ export default function AdminUsersPage() {
     </AuthGuard>
   );
 }
+

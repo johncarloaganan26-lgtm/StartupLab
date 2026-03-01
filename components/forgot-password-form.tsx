@@ -68,9 +68,9 @@ export function ForgotPasswordForm() {
       )}
 
       {success && (
-        <div className="p-4 bg-green-600/20 border border-green-400/30 rounded-lg flex items-start gap-3">
-          <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-green-100">{success}</p>
+        <div className="p-4 bg-blue-600/20 border border-blue-400/30 rounded-lg flex items-start gap-3">
+          <CheckCircle2 className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-blue-100">{success}</p>
         </div>
       )}
 
@@ -116,3 +116,4 @@ export function ForgotPasswordForm() {
     </form>
   );
 }
+

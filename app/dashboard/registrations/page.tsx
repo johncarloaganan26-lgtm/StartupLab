@@ -68,7 +68,7 @@ export default function RegistrationsPage() {
 
   const statusColors: Record<string, string> = {
     pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    confirmed: 'bg-green-100 text-green-800 border-green-200',
+    confirmed: 'bg-blue-100 text-blue-800 border-blue-200',
     attended: 'bg-blue-100 text-blue-800 border-blue-200',
     cancelled: 'bg-red-100 text-red-800 border-red-200',
     waitlisted: 'bg-orange-100 text-orange-800 border-orange-200',
@@ -140,7 +140,7 @@ export default function RegistrationsPage() {
     canvas.width = 1400;
     canvas.height = 820;
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) return '';
 
     // Background
     ctx.fillStyle = '#f8fafc';
@@ -240,7 +240,7 @@ export default function RegistrationsPage() {
         return;
       }
       const url = await generateTicketImage();
-      if (mounted) setTicketPreviewUrl(url);
+      if (mounted) setTicketPreviewUrl(url || '');
     };
     buildPreview();
     return () => {
@@ -302,21 +302,21 @@ export default function RegistrationsPage() {
           />
 
           {paginatedData.length === 0 ? (
-            <div className="bg-card border border-border rounded-lg p-12 text-center text-muted-foreground">
+            <div className="bg-white border border-border rounded-none p-20 text-center text-muted-foreground shadow-sm">
               {userRegistrations.length === 0
                 ? "You haven't registered for any events yet."
                 : "No registrations match your search."}
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto bg-card border border-border rounded-lg">
+              <div className="overflow-x-auto bg-white border border-border rounded-none shadow-sm">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-border bg-muted/50">
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Event Name</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Date</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Status</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Actions</th>
+                    <tr className="border-b border-border bg-slate-50/80">
+                      <th className="px-6 py-4 text-left text-xs font-black text-[#475569] uppercase tracking-wider">Event Name</th>
+                      <th className="px-6 py-4 text-left text-xs font-black text-[#475569] uppercase tracking-wider">Date</th>
+                      <th className="px-6 py-4 text-left text-xs font-black text-[#475569] uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-4 text-left text-xs font-black text-[#475569] uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -344,8 +344,8 @@ export default function RegistrationsPage() {
                             )}
                           </td>
                           <td className="px-6 py-4">
-                            <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[reg.status]}`}>
-                              {reg.status.charAt(0).toUpperCase() + reg.status.slice(1)}
+                            <span className={`px-2.5 py-1 rounded-none text-[10px] font-black uppercase border shadow-sm ${statusColors[reg.status]}`}>
+                              {reg.status}
                             </span>
                           </td>
                           <td className="px-6 py-4">
@@ -353,19 +353,19 @@ export default function RegistrationsPage() {
                               {reg.status !== 'cancelled' && (
                                 <Button
                                   size="sm"
-                                  variant="outline"
-                                  className="gap-2"
+                                  variant="excel"
+                                  className="gap-2 h-9"
                                   onClick={() => handleViewTicket(reg.id)}
                                 >
                                   <QrCode className="w-4 h-4" />
-                                  <span className="hidden sm:inline">Ticket</span>
+                                  <span className="hidden sm:inline">View Ticket</span>
                                 </Button>
                               )}
                               {(reg.status === 'pending' || reg.status === 'confirmed') && (
                                 <Button
                                   size="sm"
-                                  variant="outline"
-                                  className="text-destructive hover:text-destructive gap-2"
+                                  variant="excel"
+                                  className="text-red-600 hover:text-red-700 gap-2 h-9 border-red-200"
                                   onClick={() => handleCancelClick(reg.id)}
                                 >
                                   <Trash2 className="w-4 h-4" />
@@ -415,10 +415,10 @@ export default function RegistrationsPage() {
                         <img
                           src={ticketPreviewUrl}
                           alt="Ticket Preview"
-                          className="w-full max-w-[360px] rounded-lg border border-border mb-4"
+                          className="w-full max-w-[360px] rounded-none border border-border mb-4"
                         />
                       ) : (
-                        <div className="w-48 h-48 bg-muted rounded-lg flex items-center justify-center mb-4">
+                        <div className="w-48 h-48 bg-muted rounded-none flex items-center justify-center mb-4">
                           <QrCode className="w-32 h-32 text-primary/40" />
                         </div>
                       )}
@@ -432,7 +432,7 @@ export default function RegistrationsPage() {
                         Ticket No: {makeTicketNumber(selectedReg.id, selectedReg.eventId, selectedReg.registeredAt || selectedReg.createdAt)}
                       </p>
                     </div>
-                    <div className="grid grid-cols-2 gap-4 text-sm bg-muted/30 p-4 rounded-lg">
+                    <div className="grid grid-cols-2 gap-4 text-sm bg-muted/30 p-4 rounded-none">
                       <div>
                         <p className="text-muted-foreground text-xs uppercase tracking-wider font-semibold">Date</p>
                         <p className="font-medium text-foreground">{selectedEvent ? formatPHDate(selectedEvent.date) : '-'}</p>
@@ -493,3 +493,4 @@ export default function RegistrationsPage() {
     </AuthGuard>
   );
 }
+

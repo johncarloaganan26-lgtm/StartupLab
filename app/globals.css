@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
@@ -159,6 +160,10 @@ canvas {
   font-family: 'Roboto', sans-serif;
 }
 
+.font-portal {
+  font-family: 'Source Sans 3', 'Roboto', sans-serif;
+}
+
 .sidebar-section-header {
   font-family: 'Roboto', sans-serif;
   font-size: 14px;
@@ -173,6 +178,229 @@ canvas {
   font-size: 14px;
   font-weight: 400;
   line-height: 1.4;
+}
+
+/* Admin Excel-like minimal shell */
+.admin-excel-shell {
+  --background: #eef1f5;
+  --foreground: #2f3742;
+  --card: #ffffff;
+  --card-foreground: #2b3440;
+  --muted: #f2f5f8;
+  --muted-foreground: #6f7b8b;
+  --border: #d6dbe2;
+  --input: #d6dbe2;
+  --primary: #1f7fe0;
+  --primary-foreground: #ffffff;
+  background: #eef1f5;
+  color: #2f3742;
+}
+
+.dark .admin-excel-shell {
+  --background: #0b1220;
+  --foreground: #e5edf7;
+  --card: #111827;
+  --card-foreground: #e5edf7;
+  --muted: #182234;
+  --muted-foreground: #94a3b8;
+  --border: #283548;
+  --input: #283548;
+  --primary: #3b92f4;
+  --primary-foreground: #ffffff;
+  background: #0b1220;
+  color: #e5edf7;
+}
+
+.admin-excel-shell .bg-card {
+  background: #ffffff !important;
+  border-color: #d6dbe2 !important;
+  border-radius: 6px !important;
+  box-shadow: 0 1px 2px rgba(28, 38, 54, 0.06) !important;
+}
+
+.dark .admin-excel-shell .bg-card {
+  background: #111827 !important;
+  border-color: #283548 !important;
+  box-shadow: none !important;
+}
+
+.admin-excel-shell .border-border {
+  border-color: #d6dbe2 !important;
+}
+
+.dark .admin-excel-shell .border-border {
+  border-color: #283548 !important;
+}
+
+.admin-excel-shell .text-muted-foreground {
+  color: #6f7b8b !important;
+}
+
+.dark .admin-excel-shell .text-muted-foreground {
+  color: #94a3b8 !important;
+}
+
+.admin-excel-shell .text-foreground {
+  color: #2b3440 !important;
+}
+
+.dark .admin-excel-shell .text-foreground {
+  color: #e5edf7 !important;
+}
+
+.admin-excel-shell .bg-muted,
+.admin-excel-shell .bg-muted\/10,
+.admin-excel-shell .bg-muted\/20,
+.admin-excel-shell .bg-muted\/30,
+.admin-excel-shell .bg-muted\/40,
+.admin-excel-shell .bg-muted\/50 {
+  background-color: #f4f7fa !important;
+}
+
+.dark .admin-excel-shell .bg-muted,
+.dark .admin-excel-shell .bg-muted\/10,
+.dark .admin-excel-shell .bg-muted\/20,
+.dark .admin-excel-shell .bg-muted\/30,
+.dark .admin-excel-shell .bg-muted\/40,
+.dark .admin-excel-shell .bg-muted\/50 {
+  background-color: #182234 !important;
+}
+
+.admin-excel-sidebar .sidebar-section-header {
+  font-family: 'Barlow Semi Condensed', 'Source Sans 3', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-excel-sidebar .sidebar-page-item {
+  font-family: 'Source Sans 3', 'Roboto', sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+}
+
+.admin-excel-shell h1,
+.admin-excel-shell h2,
+.admin-excel-shell h3 {
+  font-family: 'Barlow Semi Condensed', 'Source Sans 3', sans-serif;
+  letter-spacing: 0.01em;
+}
+
+.admin-page-header {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.dark .admin-page-header {
+  background: #111827;
+  border: 1px solid #283548;
+}
+
+/* Unified table look + sortable header indicators */
+.overflow-x-auto table {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  width: 100%;
+}
+
+.overflow-x-auto table thead th {
+  background: #f4f6f9 !important;
+  color: #202a36 !important;
+  border-top: 1px solid #d6dbe2 !important;
+  border-bottom: 1px solid #d6dbe2 !important;
+  border-right: 1px solid #dce1e8 !important;
+  font-weight: 700 !important;
+  font-size: 0.92rem !important;
+  padding: 12px 16px !important;
+  vertical-align: middle !important;
+  white-space: nowrap;
+  text-transform: none;
+}
+
+.overflow-x-auto table thead th:first-child {
+  border-left: 1px solid #dce1e8 !important;
+}
+
+.overflow-x-auto table tbody td {
+  background: #ffffff !important;
+  color: #2a3440 !important;
+  border-right: 1px solid #dfe4eb !important;
+  border-bottom: 1px solid #dfe4eb !important;
+  padding: 13px 15px !important;
+  font-size: 0.93rem;
+  vertical-align: middle !important;
+}
+
+.overflow-x-auto table tbody td:first-child {
+  border-left: 1px solid #dfe4eb !important;
+}
+
+.overflow-x-auto table tbody tr:hover td {
+  background: #f6f8fb !important;
+}
+
+.dark .overflow-x-auto table thead th {
+  background: #162131 !important;
+  color: #e5edf7 !important;
+  border-top: 1px solid #283548 !important;
+  border-bottom: 1px solid #283548 !important;
+  border-right: 1px solid #2d3a4e !important;
+}
+
+.dark .overflow-x-auto table thead th:first-child {
+  border-left: 1px solid #2d3a4e !important;
+}
+
+.dark .overflow-x-auto table tbody td {
+  background: #111827 !important;
+  color: #dbe5f3 !important;
+  border-right: 1px solid #2d3a4e !important;
+  border-bottom: 1px solid #2d3a4e !important;
+}
+
+.dark .overflow-x-auto table tbody td:first-child {
+  border-left: 1px solid #2d3a4e !important;
+}
+
+.dark .overflow-x-auto table tbody tr:hover td {
+  background: #1a2535 !important;
+}
+
+.overflow-x-auto table thead th.table-sortable-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.table-sort-indicator {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-left: 8px;
+  font-size: 11px;
+  line-height: 0.7;
+  color: #b6bec9;
+  vertical-align: middle;
+}
+
+.table-sort-up,
+.table-sort-down {
+  opacity: 0.55;
+}
+
+th.table-sort-active-asc .table-sort-up,
+th.table-sort-active-desc .table-sort-down {
+  color: #6f7884;
+  opacity: 1;
+}
+
+.dark .table-sort-indicator {
+  color: #6b778a;
+}
+
+.dark th.table-sort-active-asc .table-sort-up,
+.dark th.table-sort-active-desc .table-sort-down {
+  color: #a8b7cc;
 }
 
 @media print {

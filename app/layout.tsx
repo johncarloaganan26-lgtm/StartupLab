@@ -5,6 +5,7 @@ import { AppProvider } from '@/contexts/app-context'
 import { LoadingProvider } from '@/contexts/loading-context'
 import { LoadingOverlay } from '@/components/loading-overlay'
 import { LoadingBar } from '@/components/loading-bar'
+import { GlobalTableSorter } from '@/components/global-table-sorter'
 import { Toaster } from '@/components/ui/toaster'
 import './globals.css'
 
@@ -40,6 +41,7 @@ export default function RootLayout({
           <AppProvider>
             <RootThemeProvider>
               {children}
+              <GlobalTableSorter />
               <LoadingOverlay />
               <LoadingBar />
             </RootThemeProvider>

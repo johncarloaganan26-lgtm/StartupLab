@@ -138,40 +138,42 @@ export default function ProfilePage() {
     <AuthGuard requiredRole="attendee">
       <DashboardLayout>
         <div className="p-4 space-y-6 max-w-6xl mx-auto">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-3xl lg:text-4xl font-bold text-foreground">My Profile</h1>
-            <p className="text-sm text-muted-foreground">Manage your personal info and security settings.</p>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h1 className="text-3xl font-black text-foreground uppercase tracking-tight">My Profile</h1>
+              <p className="text-sm text-muted-foreground font-medium">Manage your personal info and security settings.</p>
+            </div>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-6">
             <div className="space-y-6 lg:col-span-2">
-              <Card className="bg-card border-border shadow-sm">
-                <CardHeader>
-                  <CardTitle>Profile Information</CardTitle>
-                  <CardDescription>Update your personal details</CardDescription>
+              <Card className="bg-white border-border rounded-none shadow-sm">
+                <CardHeader className="border-b border-border bg-slate-50/50">
+                  <CardTitle className="text-lg font-black text-[#334155]">Profile Information</CardTitle>
+                  <CardDescription className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider">Update your personal details</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-6">
                   <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="grid md:grid-cols-2 gap-4">
                       <Field id="name" label="Full Name" error={errors.name?.message}>
-                        <Input id="name" placeholder="Your Name" {...register('name')} disabled={isLoading} />
+                        <Input id="name" placeholder="Your Name" {...register('name')} disabled={isLoading} className="rounded-none h-11 border-slate-200" />
                       </Field>
                       <Field id="email" label="Email Address" error={errors.email?.message}>
-                        <Input id="email" type="email" placeholder="you@example.com" {...register('email')} disabled={isLoading} />
+                        <Input id="email" type="email" placeholder="you@example.com" {...register('email')} disabled={isLoading} className="rounded-none h-11 border-slate-200" />
                       </Field>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-4">
                       <Field id="company" label="Company (Optional)">
-                        <Input id="company" placeholder="Your Company" {...register('company')} disabled={isLoading} />
+                        <Input id="company" placeholder="Your Company" {...register('company')} disabled={isLoading} className="rounded-none h-11 border-slate-200" />
                       </Field>
                       <Field id="phone" label="Phone (Optional)">
-                        <Input id="phone" placeholder="+63 912 345 6789" {...register('phone')} disabled={isLoading} />
+                        <Input id="phone" placeholder="+63 912 345 6789" {...register('phone')} disabled={isLoading} className="rounded-none h-11 border-slate-200" />
                       </Field>
                     </div>
 
                     <Field id="bio" label="Bio (Optional)">
-                      <Input id="bio" placeholder="Tell us about yourself" {...register('bio')} disabled={isLoading} />
+                      <Input id="bio" placeholder="Tell us about yourself" {...register('bio')} disabled={isLoading} className="rounded-none h-11 border-slate-200" />
                     </Field>
 
                     {successMessage && (
@@ -181,21 +183,21 @@ export default function ProfilePage() {
                       <Banner tone="error" message={errorMessage} />
                     )}
 
-                    <div className="flex gap-3 pt-1">
-                      <Button type="submit" disabled={isLoading} className="gap-2">
+                    <div className="flex gap-3 pt-2">
+                      <Button type="submit" disabled={isLoading} className="gap-2 bg-[#1f7fe0] hover:bg-[#1a6dc4] text-white rounded-none h-11 px-6 shadow-md border-b-4 border-[#155ca0] active:border-b-0 active:translate-y-1 transition-all">
                         {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                        {isLoading ? 'Saving...' : 'Save Changes'}
+                        <span className="font-black text-xs uppercase tracking-widest">{isLoading ? 'Saving...' : 'Save Changes'}</span>
                       </Button>
                     </div>
                   </form>
                 </CardContent>
               </Card>
 
-              <Card className="bg-card border-border shadow-sm">
-                <CardHeader>
-                  <CardTitle>Account Information</CardTitle>
+              <Card className="bg-white border-border rounded-none shadow-sm">
+                <CardHeader className="border-b border-border bg-slate-50/50">
+                  <CardTitle className="text-lg font-black text-[#334155]">Account Information</CardTitle>
                 </CardHeader>
-                <CardContent className="grid sm:grid-cols-2 gap-4">
+                <CardContent className="grid sm:grid-cols-2 gap-4 pt-6">
                   <InfoTile label="Account Type" value={user?.role || 'attendee'} />
                   <InfoTile label="Member Since" value={memberSince} />
                   <InfoTile label="Email" value={user?.email || '—'} />
@@ -205,12 +207,12 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-6">
-              <Card className="bg-card border-border shadow-sm">
-                <CardHeader>
-                  <CardTitle>Change Password</CardTitle>
-                  <CardDescription>Keep your account secure</CardDescription>
+              <Card className="bg-white border-border rounded-none shadow-sm">
+                <CardHeader className="border-b border-border bg-slate-50/50">
+                  <CardTitle className="text-lg font-black text-[#334155]">Change Password</CardTitle>
+                  <CardDescription className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider">Keep your account secure</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-6">
                   <form onSubmit={handleSubmitPw(onPasswordSubmit)} className="space-y-4">
                     <Field id="currentPassword" label="Current Password" error={pwErrors.currentPassword?.message}>
                       <Input
@@ -219,6 +221,7 @@ export default function ProfilePage() {
                         placeholder="••••••••"
                         {...registerPw('currentPassword')}
                         disabled={isChangingPassword}
+                        className="rounded-none h-11 border-slate-200"
                       />
                     </Field>
 
@@ -231,11 +234,12 @@ export default function ProfilePage() {
                         disabled={isChangingPassword}
                         onFocus={() => setShowPasswordHints(true)}
                         onBlur={() => setShowPasswordHints(newPasswordValue.length > 0)}
+                        className="rounded-none h-11 border-slate-200"
                       />
                       {showPasswordHints && (
-                        <div className="mt-2 text-xs text-foreground/80 bg-muted/40 border border-border rounded-md p-3">
-                          <p className="font-semibold text-foreground">Password Requirements</p>
-                          <ul className="list-disc list-inside space-y-0.5">
+                        <div className="mt-2 text-xs text-foreground/80 bg-slate-50 border border-border rounded-none p-3 shadow-inner">
+                          <p className="font-black text-[#334155] uppercase tracking-tight mb-1">Password Requirements</p>
+                          <ul className="list-disc list-inside space-y-0.5 font-bold">
                             <li>At least 8 characters</li>
                             <li>Uppercase, lowercase, number</li>
                             <li>One special character (!@#$%^&*)</li>
@@ -251,6 +255,7 @@ export default function ProfilePage() {
                         placeholder="••••••••"
                         {...registerPw('confirmPassword')}
                         disabled={isChangingPassword}
+                        className="rounded-none h-11 border-slate-200"
                       />
                     </Field>
 
@@ -258,9 +263,9 @@ export default function ProfilePage() {
                     {passwordError && <Banner tone="error" message={passwordError} />}
 
                     <div className="flex gap-3 pt-1">
-                      <Button type="submit" variant="outline" disabled={isChangingPassword} className="gap-2">
+                      <Button type="submit" variant="excel" disabled={isChangingPassword} className="gap-2 h-10 px-6">
                         {isChangingPassword && <Loader2 className="w-4 h-4 animate-spin" />}
-                        {isChangingPassword ? 'Changing...' : 'Change Password'}
+                        <span className="font-black text-xs uppercase tracking-widest">{isChangingPassword ? 'Changing...' : 'Change Password'}</span>
                       </Button>
                     </div>
                   </form>
@@ -287,20 +292,20 @@ function Field({
 }) {
   return (
     <div>
-      <label htmlFor={id} className="block text-sm font-medium text-foreground mb-2">
+      <label htmlFor={id} className="block text-[11px] font-black text-[#64748b] uppercase tracking-wider mb-2">
         {label}
       </label>
       {children}
-      {error && <p className="text-sm text-destructive mt-1">{error}</p>}
+      {error && <p className="text-[11px] text-red-600 mt-1 font-bold">{error}</p>}
     </div>
   );
 }
 
 function InfoTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border border-border rounded-md p-3 bg-muted/30">
-      <p className="text-xs text-muted-foreground uppercase tracking-wide">{label}</p>
-      <p className="text-sm font-semibold text-foreground mt-1 break-words">{value}</p>
+    <div className="border border-border rounded-none p-3 bg-slate-50/50 shadow-sm ring-1 ring-black/5">
+      <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">{label}</p>
+      <p className="text-sm font-bold text-[#334155] mt-1 break-words leading-tight">{value}</p>
     </div>
   );
 }
@@ -308,14 +313,14 @@ function InfoTile({ label, value }: { label: string; value: string }) {
 function Banner({ tone, message }: { tone: 'success' | 'error'; message: string }) {
   const styles =
     tone === 'success'
-      ? 'bg-green-50 border border-green-200 text-green-800'
-      : 'bg-red-50 border border-red-200 text-red-800';
+      ? 'bg-blue-50 border border-blue-200 text-blue-800 shadow-sm'
+      : 'bg-red-50 border border-red-200 text-red-800 shadow-sm';
   const Icon = tone === 'success' ? Check : AlertCircle;
 
   return (
-    <div className={`p-4 rounded-lg flex items-center gap-2 ${styles}`}>
-      <Icon className="w-5 h-5" />
-      <p className="text-sm">{message}</p>
+    <div className={`p-4 rounded-none flex items-center gap-3 ${styles}`}>
+      <Icon className="w-5 h-5 flex-shrink-0" />
+      <p className="text-sm font-bold">{message}</p>
     </div>
   );
 }

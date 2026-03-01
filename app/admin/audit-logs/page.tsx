@@ -156,11 +156,11 @@ export default function AdminAuditLogsPage() {
     <AuthGuard requiredRole="admin">
       <AdminLayout>
         <div className="space-y-6 print:space-y-0">
-          <div className="print:hidden">
-            <h1 className="text-3xl lg:text-4xl font-bold text-foreground">
+          <div className="admin-page-header print:hidden">
+            <h1 className="text-3xl lg:text-4xl font-black text-foreground uppercase tracking-tight">
               Audit Logs
             </h1>
-            <p className="text-muted-foreground mt-2">
+            <p className="text-sm text-muted-foreground mt-2 font-medium italic">
               Track administrative activities across the platform.
             </p>
           </div>
@@ -184,12 +184,12 @@ export default function AdminAuditLogsPage() {
               <Loader2 className="w-6 h-6 animate-spin text-primary" />
             </div>
           ) : error ? (
-            <div className="bg-card border border-destructive/20 rounded-lg p-6 text-center text-destructive">
+            <div className="bg-card border border-destructive/20 rounded-none p-6 text-center text-destructive">
               {error}
             </div>
           ) : (
             <>
-              <div className="relative overflow-x-auto bg-card border border-border rounded-lg">
+              <div className="relative overflow-x-auto bg-card border border-border rounded-none">
                 <div className="pointer-events-none absolute inset-0 z-0 hidden items-end justify-center pb-10 print:flex">
                   <img
                     src="/Dark-e1735336357773.png"
@@ -199,18 +199,18 @@ export default function AdminAuditLogsPage() {
                 </div>
                 <table className="relative z-10 w-full">
                   <thead>
-                    <tr className="border-b border-border bg-muted/50 text-left">
-                      <th className="px-6 py-3 text-sm font-semibold text-foreground">Timestamp</th>
-                      <th className="px-6 py-3 text-sm font-semibold text-foreground">Actor</th>
-                      <th className="px-6 py-3 text-sm font-semibold text-foreground">Action</th>
-                      <th className="px-6 py-3 text-sm font-semibold text-foreground">Summary</th>
-                      <th className="px-6 py-3 text-right text-sm font-semibold text-foreground">Details</th>
+                    <tr className="border-b border-slate-200 bg-slate-50/80 text-left">
+                      <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Timestamp</th>
+                      <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Actor</th>
+                      <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Action</th>
+                      <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-widest">Summary</th>
+                      <th className="px-6 py-4 text-right text-[11px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Details</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
                     {paginatedData.map((log) => {
                       const toneClass =
-                        log.tone === 'success' ? 'text-emerald-600' :
+                        log.tone === 'success' ? 'text-blue-600' :
                           log.tone === 'info' ? 'text-sky-600' :
                             log.tone === 'warning' ? 'text-amber-600' :
                               log.tone === 'danger' ? 'text-rose-600' :
@@ -226,7 +226,7 @@ export default function AdminAuditLogsPage() {
                             <p className="text-xs text-muted-foreground">{log.adminEmail}</p>
                           </td>
                           <td className="px-6 py-4">
-                            <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-current ${toneClass}`}>
+                            <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-none border border-current ${toneClass}`}>
                               {log.action}
                             </span>
                           </td>
@@ -241,7 +241,7 @@ export default function AdminAuditLogsPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => setSelectedLog(log)}
-                              className="text-primary hover:text-primary hover:bg-primary/10"
+                              className="text-[#1f7fe0] hover:text-[#1a6dc4] hover:bg-[#1f7fe0]/10"
                             >
                               <Eye className="w-4 h-4 mr-2" />
                               View
@@ -274,11 +274,11 @@ export default function AdminAuditLogsPage() {
           )}
 
           <Dialog open={!!selectedLog} onOpenChange={() => setSelectedLog(null)}>
-            <DialogContent className="max-w-2xl bg-card border-border">
-              <DialogHeader>
-                <DialogTitle>Audit Log Details</DialogTitle>
+            <DialogContent className="max-w-2xl bg-white border-border rounded-none shadow-2xl p-0 overflow-hidden">
+              <DialogHeader className="p-6 pb-2 border-b border-border bg-slate-50/50">
+                <DialogTitle className="text-lg font-black text-[#334155] uppercase tracking-tight">Audit Log Details</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4 py-4">
+              <div className="p-6 space-y-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-muted-foreground">Action</p>
@@ -292,7 +292,7 @@ export default function AdminAuditLogsPage() {
                   </div>
                 </div>
 
-                <div className="p-4 bg-muted/50 rounded-lg border border-border">
+                <div className="p-4 bg-muted/50 rounded-none border border-border">
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Raw Action Data</p>
                   <pre className="text-[11px] font-mono text-foreground overflow-auto max-h-[400px] leading-relaxed">
                     {JSON.stringify(selectedLog?.detailsJson, null, 2)}

@@ -79,7 +79,7 @@ export function NotificationBell() {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'registration_approved': return 'text-green-600 bg-green-50'
+      case 'registration_approved': return 'text-blue-600 bg-blue-50'
       case 'registration_rejected': return 'text-red-600 bg-red-50'
       case 'registration_attended': return 'text-blue-600 bg-blue-50'
       case 'registration_pending': return 'text-yellow-600 bg-yellow-50'
@@ -104,7 +104,7 @@ export function NotificationBell() {
       </Button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
+        <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-none shadow-lg border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
             <h3 className="font-semibold">Notifications</h3>
             {unreadCount > 0 && (
@@ -161,3 +161,4 @@ export function NotificationBell() {
     </div>
   )
 }
+

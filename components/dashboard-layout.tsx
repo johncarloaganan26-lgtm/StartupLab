@@ -138,7 +138,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             className="print-watermark h-auto w-[1180px] object-contain"
           />
         </div>
-        <div className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6 py-4 print:hidden">
+        <div className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 py-2.5 print:hidden">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 flex-1">
               <Button
@@ -233,8 +233,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                       </div>
                     ) : (
                       notifications.map((n: any) => (
-                        <DropdownMenuItem 
-                          key={n.id} 
+                        <DropdownMenuItem
+                          key={n.id}
                           className={`flex flex-col items-start gap-2 p-4 cursor-pointer focus:bg-muted border-b border-border last:border-0 rounded-none ${!n.is_read ? 'bg-blue-50 dark:bg-blue-950/30' : ''}`}
                           onClick={() => !n.is_read && markAsRead(n.id)}
                         >
@@ -269,7 +269,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </div>
 
-        <div className="print-page-content relative z-10 flex-1 p-6 md:p-8">
+        <div className="print-page-content relative z-10 flex-1 p-4 md:p-5">
           <PrintHeader variant="user" />
           {children}
         </div>
